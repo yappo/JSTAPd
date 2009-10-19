@@ -1,0 +1,43 @@
+This is Perl module JSTAPd.
+
+Description
+
+JSTAPd is Javascript Unit Test Server.
+http://gyazo.com/5812d59c9dca229b58ede44905363a16.png
+
+Usage
+
+1. start server
+  $ ./scripts/jstapd -d eg/simple
+
+2. open url
+  http://127.0.0.1:1978/____jstapd/
+
+3. click to "make test" button
+
+
+INSTALLATION
+
+JSTAPd installation is straightforward. If your CPAN shell is set up,
+you should just be able to do
+
+    % cpan JSTAPd
+
+Download it, unpack it, then build it as per the usual:
+
+    % perl Makefile.PL
+    % make && make test
+
+Then install it:
+
+    % make install
+
+DOCUMENTATION
+
+JSTAPd documentation is available as in POD. So you can do:
+
+    % perldoc JSTAPd
+
+to read the documentation online with your favorite pager.
+
+Kazuhiro Osawa

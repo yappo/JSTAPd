@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use lib 'lib';
+use Getopt::Long;
+use JSTAPd::Server;
+
+# From 'prove': Allow cuddling the paths with the -ignore_case
+@ARGV = map { /^(-I)(.+)/ ? ($1,$2) : $_ } @ARGV;
+
+my @includes;
+my $dir = 'jt';
+my $port = 1978;
+
+Getopt::Long::Configure("no_ignore_case", "pass_through");
+GetOptions(
+    "d|dir=s"      => \$dir,
+    "p|port=s"      => \$port,
+    'I=s@'         => \@includes,
+    "h|help",      => \my $help,
+);
+
+pod2usage(0) if $help;
+lib->import(@includes) if @includes;
+
+JSTAPd::Server->new( dir => $dir, port => $port )->run;
+
+__END__
+
+=head1 NAME
+
+jstapd - 
+
+=head1 SYNOPSIS
+
+jstapd -d testdir

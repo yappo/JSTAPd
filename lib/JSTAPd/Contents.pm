@@ -46,8 +46,8 @@ sub header {
     my($self, %args) = @_;
     my $script = $self->script;
 
-    my $include;
-    $include .= sprintf qq{<script src="$_" type="text/javascript"></script>} for @{ $self->{include_ext} }, @{ $self->{include} };
+    my $include = '';
+    $include .= qq{<script src="$_" type="text/javascript"></script>} for (@{ $self->{include_ext} }, @{ $self->{include} });
 
     my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $args{pre_script}, $include, $script;
 <script type="text/javascript">

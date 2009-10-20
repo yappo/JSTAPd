@@ -7,9 +7,11 @@ sub new {
     bless {
         tests => undef,
         tap   => [],
+        global_stash => {},
     }, $class;
 }
 
+sub global_stash { $_[0]->{global_stash} }
 sub tests { $_[0]->{tests} = defined $_[1] ? $_[1] : $_[0]->{tests} }
 sub error { $_[0]->{error} = defined $_[1] ? $_[1] : $_[0]->{error} }
 

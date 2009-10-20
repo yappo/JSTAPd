@@ -43,6 +43,7 @@ sub load_config {
     $self->{conf} = {
         jstapd_prefix => '____jstapd',
         urlmap       => +[],
+        apiurl       => undef,
         %{ $hash },
     };
 }
@@ -106,22 +107,37 @@ sub handler {
     my $session = $req->param('session') || Data::UUID->new->create_hex;
 
     my $jstapd_prefix = $self->{conf}->{jstapd_prefix};
+    my $apiurl        = $self->{conf}->{apiurl};
     my $res;
     if (my($path) = $req->uri->path =~ m!^/$jstapd_prefix/(.+)?$!) {
         # serve jstapd contents
         $path = 'index' unless $path;
         $path .= 'index' if $path =~ m!/$! || !$path;
+        $self->get_session($session)->{current_path} ||= do {
+            my $p = $path;
+            $p =~ s{^contents/}{};
+            $p;
+        };
         $res = JSTAPd::Server::Contents->handler($path, $self, $req, $session);
+
     } elsif (($path) = $req->uri->path =~ m!^/${jstapd_prefix}__api/(.+)?$!) {
-        # ajax request
+        # ajax request for jstapd
         $res = $self->api_handler($path, $req, $session);
         $res ||= HTTP::Engine::Response->new( status => 200, body => '{msg:"ok"}' );
+
+    } elsif ($apiurl && $req->uri->path =~ /$apiurl/) {
+        # ajax request for appication
+        $session = $req->cookie($jstapd_prefix)->value;
+        my $current_path = $self->get_session($session)->{current_path};
+        $res = JSTAPd::Server::Contents->handler("contents/$current_path", $self, $req, $session, { path => $current_path, is_api => 1 });
+
     } elsif ($req->uri->path eq '/favicon.ico') {
     } else {
         # ajax request?
         my $path = $self->decode_urlmap($req->uri->path);
         $res = HTTP::Engine::Response->new( status => 200, body => $self->{dir}->file($path)->slurp.'' );
     }
+    $res->cookies->{$jstapd_prefix} = { value => $session } if $res;
     return $res || HTTP::Engine::Response->new( status => 404, body => 'Not Found' );
 }
 

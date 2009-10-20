@@ -38,6 +38,8 @@ sub parse {
     $self->{include_ext} = \@include_ext;
 }
 
+sub api { $_[0]->{list}->{API} || '' }
+
 sub include { @{ $_[0]->{include} } }
 sub html { $_[0]->{list}->{HTML} || '' }
 sub script { $_[0]->{list}->{SCRIPT} || '' }
@@ -60,7 +62,9 @@ var path          = '%s';
 
 // test functions
 var tap_count = 0;
+var tap_tests = 0;
 window.tests = function(num){
+    tap_tests = num;
     enqueue(function(){
         get('tests', { num: num });
     });
@@ -161,13 +165,28 @@ window.like = function(got, expected, msg){
 };
 
 window.tap_done = function(error){
-    enqueue(function(){
-        get('tap_done', { error: error }, function(r){
-            var pre = document.createElement("pre");
-            pre.innerHTML = r.responseText;
-            tap$tag('body').appendChild(pre);
-        })
-    });
+    var go_done = function(){
+        enqueue(function(){
+            get('tap_done', { error: error }, function(r){
+                var pre = document.createElement("pre");
+                pre.innerHTML = r.responseText;
+                tap$tag('body').appendChild(pre);
+            })
+        });
+    };
+    if (tap_tests == 0) {
+        go_done();
+    } else {
+        // async done mode
+        var do_async; do_async = function(){
+            if (tap_count >= tap_tests) {
+                go_done();
+            } else {
+                setTimeout(do_async, 100);
+            }
+        };
+        setTimeout(do_async, 100);
+    }
 };
 
 window.tap_dump = function(){

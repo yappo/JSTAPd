@@ -5,7 +5,7 @@ use HTTP::Engine::Response;
 use Data::UUID;
 
 sub handler {
-    my($class, $path, $server, $req, $session) = @_;
+    my($class, $path, $server, $req, $session, $args) = @_;
 
     my @chain  = split '/', $path;
     my $method = pop @chain;
@@ -22,8 +22,8 @@ sub handler {
     unless (!$@ && ($klass->can($method) || $klass->can('AUTOLOAD'))) {
         return HTTP::Engine::Response->new( status => 404, body => 'Not Found' );
     }
-    warn "$klass -> $method";
-    $klass->$method($server, $req, $session);
+    warn "$klass -> $method : " . $req->uri;
+    $klass->$method($server, $req, $session, $args);
 }
 
 # index page
@@ -33,6 +33,7 @@ sub index {
 }
 
 package JSTAPd::Server::Contents::contents;
+use JSON::XS ();
 
 sub _gen_li {
     my $path = shift;
@@ -54,7 +55,7 @@ sub _index {
 }
 
 sub AUTOLOAD {
-    my($class, $server, $req, $session) = @_;
+    my($class, $server, $req, $session, $args) = @_;
     my $path = our $AUTOLOAD;
     $path =~ s/.+:://;
     my @chain = split '/', $path;
@@ -67,13 +68,17 @@ sub AUTOLOAD {
     # foo.jstap
     $server->setup_session_tap($session, $path);
 
-    my $index   = $server->contents->fetch_file('index', \@chain, 1);
     my $content = $server->contents->fetch_file($basename, \@chain);
+
+    if ($args->{is_api}) {
+        return __run_api($content, $server, $req, $session, $args);
+    }
 
     my @include = map {
         "include('$_');"
     } $content->include;
 
+    my $index   = $server->contents->fetch_file('index', \@chain, 1);
     return HTTP::Engine::Response->new(
         body => $index->build_html(
             $content->header(
@@ -85,6 +90,29 @@ sub AUTOLOAD {
             $content->body,
         ),
     );
+}
+
+sub __run_api {
+    my($content, $server, $req, $session, $args) = @_;
+    my $tap = $server->get_tap($session, $args->{path});
+
+    my $GLOBAL = $tap->global_stash;
+    my $METHOD = $req->method;
+    my $PATH   = $req->uri->path;
+    my $PARAM  = $req->params;
+
+    my $api = $content->api;
+    my $ret = eval $api;
+    if ($@) {
+        my $err = sprintf "error: %s\n\t%s\n", $args->{path}, $@;
+        warn $err;
+        return HTTP::Engine::Response->new( status => 500, body => $err );
+    }
+    if (ref($ret)) {
+        return HTTP::Engine::Response->new( body => JSON::XS->new->ascii->encode($ret) );
+    } else {
+        return HTTP::Engine::Response->new( body => $ret );
+    }
 }
 
 1;

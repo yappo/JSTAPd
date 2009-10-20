@@ -70,12 +70,17 @@ sub AUTOLOAD {
     my $index   = $server->contents->fetch_file('index', \@chain, 1);
     my $content = $server->contents->fetch_file($basename, \@chain);
 
+    my @include = map {
+        "include('$_');"
+    } $content->include;
+
     return HTTP::Engine::Response->new(
         body => $index->build_html(
             $content->header(
                 jstapd_prefix => $server->jstapd_prefix,
                 session       => $session,
                 path          => $path,
+                pre_script    => join("\n", @include)."\n",
             ),
             $content->body,
         ),

@@ -32,8 +32,13 @@ sub parse {
     push @list, join("\n", @tmp) if @list;
 
     $self->{list} = +{ @list };
+    my @include = split /\n/, ($self->{list}->{INCLUDE} || '');
+    $self->{include} = \@include;
+    my @include_ext = split /\n/, ($self->{list}->{INCLUDE_EXT} || '');
+    $self->{include_ext} = \@include_ext;
 }
 
+sub include { @{ $_[0]->{include} } }
 sub html { $_[0]->{list}->{HTML} || '' }
 sub script { $_[0]->{list}->{SCRIPT} || '' }
 
@@ -41,7 +46,10 @@ sub header {
     my($self, %args) = @_;
     my $script = $self->script;
 
-    my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $script;
+    my $include;
+    $include .= sprintf qq{<script src="$_" type="text/javascript"></script>} for @{ $self->{include_ext} }, @{ $self->{include} };
+
+    my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $args{pre_script}, $include, $script;
 <script type="text/javascript">
 (function(){
 var jstapd_prefix = '/%s__api/';
@@ -157,7 +165,7 @@ window.tap_done = function(error){
         get('tap_done', { error: error }, function(r){
             var pre = document.createElement("pre");
             pre.innerHTML = r.responseText;
-            tap$('body').appendChild(pre);
+            tap$tag('body').appendChild(pre);
         })
     });
 };
@@ -171,8 +179,34 @@ window.tap_dump = function(){
 window.tap_xhr = function(){
     return xhr();
 };
+
+window.include = function(src){
+    enqueue(function(){
+        var r = xhr();
+        r.open('GET', src + '?_='+(new Date).getTime());
+        r.onreadystatechange = function() {
+            if (r.readyState != 4) return;
+            if (r.status != 200) throw new Error(src + ' is not found');
+            eval(r.responseText);
+            is_xhr_running = false;
+            dequeue();
+        }
+        is_xhr_running = true;
+        r.send(null);
+    });
+};
 })();
 </script>
+<script type="text/javascript">
+(function(){
+try {
+%s
+} catch(e) {
+//    tap_done(e);
+}
+})();
+</script>
+%s
 <script type="text/javascript">
 (function(){
 window.onload = function(){
@@ -227,7 +261,7 @@ var status = {
 };
 var current_path = '';
 function start_next(args){
-    var body = tap$('body');
+    var body = tap$tag('body');
 
     var h = document.createElement("h2");
     var a = document.createElement("a");
@@ -394,6 +428,9 @@ var tap = function(type, query, cb){
 // util
 window.tap$ = function(id){
     return document.getElementById(id);
+};
+window.tap$tag = function(tag){
+    return document.getElementsByTagName(tag)[0];
 };
 JS
 }

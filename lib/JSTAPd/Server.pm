@@ -42,7 +42,7 @@ sub load_config {
 
     $self->{conf} = {
         jstapd_prefix => '____jstapd',
-        urlmap       => +{},
+        urlmap       => +[],
         %{ $hash },
     };
 }
@@ -91,7 +91,14 @@ sub get_tap {
     $_[0]->get_path($_[1], $_[2])->{tap};
 }
 
-sub rewrite_urlmap {
+sub decode_urlmap {
+    my($self, $path) = @_;
+    my $urlmap = $self->{conf}->{urlmap};
+    for my $conf (@{ $urlmap }) {
+        my($re, $new) = %{ $conf };
+        last if $path =~ s/$re/$new/;
+    }
+    $path;
 }
 
 sub handler {
@@ -109,8 +116,11 @@ sub handler {
         # ajax request
         $res = $self->api_handler($path, $req, $session);
         $res ||= HTTP::Engine::Response->new( status => 200, body => '{msg:"ok"}' );
+    } elsif ($req->uri->path eq '/favicon.ico') {
     } else {
         # ajax request?
+        my $path = $self->decode_urlmap($req->uri->path);
+        $res = HTTP::Engine::Response->new( status => 200, body => $self->{dir}->file($path)->slurp.'' );
     }
     return $res || HTTP::Engine::Response->new( status => 404, body => 'Not Found' );
 }

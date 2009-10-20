@@ -11,7 +11,8 @@ use JSTAPd::Server::Contents;
 use JSTAPd::TAP;
 
 sub contents { $_[0]->{contents} }
-sub jstapd_prefix { $_[0]->{jstapd_prefix} }
+sub conf { $_[0]->{conf} }
+sub jstapd_prefix { $_[0]->{conf}->{jstapd_prefix} }
 
 sub new {
     my($class, %opts) = @_;
@@ -20,13 +21,30 @@ sub new {
         dir  => '.',
         port => 1978,
         host => '127.0.0.1',
-        jstapd_prefix => '____jstapd',
         session_tap => +{},
         %opts,
     }, $class;
+    $self->{dir} = Path::Class::Dir->new( $self->{dir} );
     $self->{contents} = JSTAPd::ContentsBag->new( dir => $self->{dir} );
     $self->{contents}->load;
+    $self->load_config;
     $self;
+}
+
+sub load_config {
+    my $self = shift;
+    my $path = $self->{dir}->file('conf.pl');
+    my $hash = do $path;
+    if (defined $hash && ref($hash) ne 'HASH') {
+        die "$path return data is not HASHref";
+    }
+    $hash ||= +{};
+
+    $self->{conf} = {
+        jstapd_prefix => '____jstapd',
+        urlmap       => +{},
+        %{ $hash },
+    };
 }
 
 sub run {
@@ -44,7 +62,7 @@ sub run {
             },
         },
     );
-    warn sprintf 'starting: http://%s:%s/%s/', $self->{host}, $self->{port}, $self->{jstapd_prefix};
+    warn sprintf 'starting: http://%s:%s/%s/', $self->{host}, $self->{port}, $self->{conf}->{jstapd_prefix};
     $self->{engine}->run;
 }
 
@@ -73,11 +91,14 @@ sub get_tap {
     $_[0]->get_path($_[1], $_[2])->{tap};
 }
 
+sub rewrite_urlmap {
+}
+
 sub handler {
     my($self, $req) = @_;
     my $session = $req->param('session') || Data::UUID->new->create_hex;
 
-    my $jstapd_prefix = $self->{jstapd_prefix};
+    my $jstapd_prefix = $self->{conf}->{jstapd_prefix};
     my $res;
     if (my($path) = $req->uri->path =~ m!^/$jstapd_prefix/(.+)?$!) {
         # serve jstapd contents

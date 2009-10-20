@@ -4,6 +4,8 @@ use warnings;
 
 use JSTAPd::Contents;
 
+sub dir { $_[0]->{dir} }
+
 sub new {
     my($class, %args) = @_;
 
@@ -37,7 +39,7 @@ sub _loader {
 
 sub load {
     my $self = shift;
-    $self->{contents} = _loader( Path::Class::Dir->new($self->{dir}) );
+    $self->{contents} = _loader( $self->{dir} );
 }
 
 sub fetch_file {

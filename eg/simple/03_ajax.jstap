@@ -10,7 +10,7 @@ function run_test1(){
     xhr.onreadystatechange = function() {
         if (xhr.readyState != 4) return;
         is(xhr.status, 200, 'GET STATUS CODE');
-        is(xhr.responseText, 'response body '+now+' - '+now, 'GET RESPONSE BODY 1');
+        is(xhr.responseText, 'response body '+now+' - '+now, 'GET RESPONSE BODY '+now);
     };
     xhr.send(null);
 }

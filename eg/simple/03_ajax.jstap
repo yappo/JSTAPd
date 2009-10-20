@@ -1,0 +1,26 @@
+__SCRIPT__
+tests(2);
+
+var i = 0;
+function run_test1(){
+    var xhr = tap_xhr();
+    xhr.open('GET', '/api/get?key=value');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState != 4) return;
+        i++;
+        is(r.status, 200, 'GET STATUS CODE');
+        is(r.responseText, 'response body '+i, 'GET RESPONSE BODY 1');
+    };
+    xhr.send(null);
+}
+
+run_test1();
+run_test1();
+
+__SERVER__
+$GLOBAL->{i} ||= 0;
+
+if ($PATH eq '/api/get' && $METHOD eq 'GET') {
+    $GLOBAL->{i}++;
+    return "response body " . $GLOBAL->{i};
+}

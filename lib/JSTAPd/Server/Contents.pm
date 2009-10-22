@@ -29,7 +29,11 @@ sub handler {
 # index page
 sub index {
     my($class, $server, $req, $session) = @_;
-    HTTP::Engine::Response->new( body => JSTAPd::Contents->build_index( jstapd_prefix => $server->jstapd_prefix, run_once => $server->run_once ) );
+    HTTP::Engine::Response->new( body => JSTAPd::Contents->build_index(
+        jstapd_prefix => $server->jstapd_prefix,
+        run_once      => $server->run_once,
+        auto_open     => $server->auto_open,
+    ));
 }
 
 package JSTAPd::Server::Contents::contents;

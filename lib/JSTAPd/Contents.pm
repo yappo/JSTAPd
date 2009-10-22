@@ -262,7 +262,7 @@ sub build_index {
 sub _default_index {
     my %args = @_;
 
-    return sprintf <<'HTML', $args{jstapd_prefix}, $args{jstapd_prefix}, ($args{run_once} ? 'true' : 'false'), _default_tap_lib();
+    return sprintf <<'HTML', $args{jstapd_prefix}, $args{jstapd_prefix}, ($args{run_once} ? 'true' : 'false'), ($args{auto_open} ? 'true' : 'false'), _default_tap_lib();
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
@@ -273,6 +273,7 @@ var contents_prefix = '/%s/contents/';
 var session = '';
 var path = '';
 var run_once = %s;
+var auto_open = %s;
 
 %s
 
@@ -369,7 +370,10 @@ function all_tests_finish(){
     }
     results.appendChild(div2);
 
-    if (run_once) get('exit', {}, function(r){});
+    if (run_once) {
+        get('exit', {}, function(r){ /* nothing response */ });
+        if (auto_open) window.close();
+    }
 }
 
 function get_next(){

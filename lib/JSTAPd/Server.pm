@@ -4,7 +4,10 @@ use warnings;
 use Data::Dumper;
 use JSON::XS;
 use HTTP::Engine;
+use HTTP::Request;
+use LWP::UserAgent;
 use Path::Class;
+use Time::HiRes;
 
 use JSTAPd::ContentsBag;
 use JSTAPd::Server::Contents;
@@ -14,6 +17,7 @@ sub contents { $_[0]->{contents} }
 sub conf { $_[0]->{conf} }
 sub jstapd_prefix { $_[0]->{conf}->{jstapd_prefix} }
 sub run_once { !!$_[0]->{run_file} }
+sub auto_open { !!$_[0]->{conf}->{auto_open_command} }
 
 sub new {
     my($class, %opts) = @_;
@@ -46,12 +50,34 @@ sub load_config {
         jstapd_prefix => '____jstapd',
         urlmap       => +[],
         apiurl       => undef,
+        auto_open_command => $ENV{JSTAP_AUTO_OPEN_COMMAND} || undef,
         %{ $hash },
     };
 }
 
 sub run {
     my $self = shift;
+
+    my $uri = sprintf 'http://%s:%s/%s/', $self->{host}, $self->{port}, $self->{conf}->{jstapd_prefix};
+    if ($self->auto_open) {
+        if (my $pid = fork) {
+            # running to server
+        } elsif (defined $pid) {
+            warn "KO";
+            while (1) {
+                sleep 0.01;
+                my $res = LWP::UserAgent->new->request(
+                    HTTP::Request->new( GET => $uri )
+                    );
+                last if $res->code == 200;
+            }
+            my $cmd = sprintf($self->conf->{auto_open_command}, $uri);
+            `$cmd`;
+            exit;
+        } else {
+            die 'browser auto open mode is fork error';
+        }
+    }
 
     $self->{engine} = HTTP::Engine->new(
         interface => {
@@ -65,7 +91,7 @@ sub run {
             },
         },
     );
-    warn sprintf 'starting: http://%s:%s/%s/', $self->{host}, $self->{port}, $self->{conf}->{jstapd_prefix};
+    warn "starting: $uri";
     $self->{engine}->run;
 }
 

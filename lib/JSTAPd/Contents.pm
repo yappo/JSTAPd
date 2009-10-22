@@ -276,7 +276,7 @@ var path = '';
 (function(){
 
 var status = {
-    tests: [],
+    tests: []
 };
 var current_path = '';
 function start_next(args){

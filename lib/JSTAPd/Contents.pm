@@ -172,7 +172,7 @@ window.tap_done = function(error){
             })
         });
     };
-    if (tap_tests == 0) {
+    if (tap_tests == 0 || error) {
         go_done();
     } else {
         // async done mode

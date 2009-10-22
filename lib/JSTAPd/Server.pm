@@ -63,7 +63,6 @@ sub run {
         if (my $pid = fork) {
             # running to server
         } elsif (defined $pid) {
-            warn "KO";
             while (1) {
                 sleep 0.01;
                 my $res = LWP::UserAgent->new->request(

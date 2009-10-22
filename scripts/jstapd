@@ -11,11 +11,13 @@ use JSTAPd::Server;
 my @includes;
 my $dir = 'jt';
 my $port = 1978;
+my $host = '127.0.0.1';
 
 Getopt::Long::Configure("no_ignore_case", "pass_through");
 GetOptions(
     "d|dir=s"      => \$dir,
     "p|port=s"      => \$port,
+    "a|addr=s"      => \$host,
     'I=s@'         => \@includes,
     "h|help",      => \my $help,
 );
@@ -23,7 +25,7 @@ GetOptions(
 pod2usage(0) if $help;
 lib->import(@includes) if @includes;
 
-JSTAPd::Server->new( dir => $dir, port => $port )->run;
+JSTAPd::Server->new( dir => $dir, port => $port, host => $host )->run;
 
 __END__
 

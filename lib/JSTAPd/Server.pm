@@ -63,6 +63,7 @@ sub run {
         if (my $pid = fork) {
             # running to server
         } elsif (defined $pid) {
+            # waiting http server startup
             while (1) {
                 sleep 0.01;
                 my $res = LWP::UserAgent->new->request(
@@ -70,6 +71,8 @@ sub run {
                     );
                 last if $res->code == 200;
             }
+
+            # open the browser
             my $cmd = sprintf($self->conf->{auto_open_command}, $uri);
             `$cmd`;
             exit;

@@ -46,11 +46,12 @@ sub load_config {
     }
     $hash ||= +{};
 
+    $hash->{auto_open_command} = $ENV{JSTAP_AUTO_OPEN_COMMAND}if $ENV{JSTAP_AUTO_OPEN_COMMAND};
+
     $self->{conf} = {
         jstapd_prefix => '____jstapd',
         urlmap       => +[],
         apiurl       => undef,
-        auto_open_command => $ENV{JSTAP_AUTO_OPEN_COMMAND} || undef,
         %{ $hash },
     };
 }

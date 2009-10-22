@@ -9,19 +9,19 @@ sub dir { $_[0]->{dir} }
 sub new {
     my($class, %args) = @_;
 
-    my $self = bless { dir => $args{dir} }, $class;
+    my $self = bless { dir => $args{dir}, run_file => $args{run_file} }, $class;
     $self;
 }
 
 sub _loader {
-    my $base = shift;
+    my($self, $base) = @_;
 
     my $dir = +{ children => +{}, map => +{}, path => $base };
     my @contents;
     for my $path ($base->children) {
         if ($path->is_dir) {
             my $name  = $path->dir_list(-1);
-            my $stuff = _loader($path);
+            my $stuff = $self->_loader($path);
             $stuff->{name} = $name;
             push @contents, $stuff;
             $dir->{children}->{$name} = $stuff;
@@ -29,6 +29,9 @@ sub _loader {
         }
         my $basename = $path->basename;
         next unless $path =~ /\.t$/ || $basename eq 'index';
+        if ($self->{run_file}) {
+            next unless $path->relative($self->{dir}) eq $self->{run_file};
+        }
         my $stuff = JSTAPd::Contents->new( $basename => $path );
         push @contents, $stuff;
         $dir->{map}->{$basename} = $stuff;
@@ -39,7 +42,7 @@ sub _loader {
 
 sub load {
     my $self = shift;
-    $self->{contents} = _loader( $self->{dir} );
+    $self->{contents} = $self->_loader( $self->{dir} );
 }
 
 sub fetch_file {

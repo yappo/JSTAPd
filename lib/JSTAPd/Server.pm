@@ -31,7 +31,7 @@ sub new {
         %opts,
     }, $class;
     $self->{dir} = Path::Class::Dir->new( $self->{dir} );
-    $self->{contents} = JSTAPd::ContentsBag->new( dir => $self->{dir} );
+    $self->{contents} = JSTAPd::ContentsBag->new( dir => $self->{dir}, run_file => $self->{run_file} );
     $self->{contents}->load;
     $self->load_config;
     $self;

@@ -171,6 +171,7 @@ window.tap_done = function(error){
                 var div = document.createElement("div");
                 div.innerHTML = r.responseText.replace(/\n/g, '<br>');
                 tap$tag('body').appendChild(div);
+                tap$('jstap_users_body_container').style.display = 'none';
             })
         });
     };
@@ -247,6 +248,7 @@ sub body { $_[0]->html }
 sub build_html {
     my($self, $head, $body) = @_;
     my $index = $self->slurp;
+    $body = sprintf '<div id="jstap_users_body_container">%s</div>', $body;
     $index =~ s/\$HEAD/$head/g;
     $index =~ s/\$BODY/$body/g;
     $index;

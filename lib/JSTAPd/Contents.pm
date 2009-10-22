@@ -168,9 +168,9 @@ window.tap_done = function(error){
     var go_done = function(){
         enqueue(function(){
             get('tap_done', { error: error }, function(r){
-                var pre = document.createElement("pre");
-                pre.innerHTML = r.responseText;
-                tap$tag('body').appendChild(pre);
+                var div = document.createElement("div");
+                div.innerHTML = r.responseText.replace(/\n/g, '<br>');
+                tap$tag('body').appendChild(div);
             })
         });
     };

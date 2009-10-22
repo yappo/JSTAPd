@@ -80,7 +80,7 @@ sub AUTOLOAD {
 
     my @include = map {
         "include('$_');"
-    } $content->include;
+    } $content->suite->include;
 
     my $index   = $server->contents->fetch_file('index', \@chain, 1);
     return HTTP::Engine::Response->new(
@@ -91,7 +91,7 @@ sub AUTOLOAD {
                 path          => $path,
                 pre_script    => join("\n", @include)."\n",
             ),
-            $content->body,
+            $content->suite->html_body,
         ),
     );
 }
@@ -103,14 +103,25 @@ sub __run_api {
     my $GLOBAL = $tap->global_stash;
     my $METHOD = $req->method;
     my $PATH   = $req->uri->path;
-    my $PARAM  = $req->params;
 
-    my $api = $content->api;
-    my $ret = eval $api;
-    if ($@) {
-        my $err = sprintf "error: %s\n\t%s\n", $args->{path}, $@;
-        warn $err;
-        return HTTP::Engine::Response->new( status => 500, body => $err );
+    my $ret;
+    my $err;
+    do {
+        local $@;
+        eval {
+            $ret = $content->suite->server_api(
+                $tap->global_stash,
+                $req,
+                $req->method,
+                $req->uri->path,
+            );
+        };
+        $err = $@;
+    };
+    if ($err) {
+        my $body = sprintf "error: %s\n\t%s\n", $args->{path}, $err;
+        warn $body;
+        return HTTP::Engine::Response->new( status => 500, body => $body );
     }
     if (ref($ret)) {
         return HTTP::Engine::Response->new( body => JSON::XS->new->ascii->encode($ret) );

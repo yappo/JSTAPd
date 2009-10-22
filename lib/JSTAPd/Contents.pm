@@ -2,54 +2,51 @@ package JSTAPd::Contents;
 use strict;
 use warnings;
 
+sub suite { $_[0]->{suite} }
+
 sub new {
     my($class, $name, $path) = @_;
 
     my $self = bless {
-        name => $name,
-        path => $path,
+        name  => $name,
+        path  => $path,
+        suite => undef,
     }, $class;
-    $self->parse;
+    $self->parse if $path =~ /\.t$/;
     $self;
 }
 
 sub slurp { $_[0]->{slurp} ||= $_[0]->{path}->slurp }
 
+my $ANON_CLASS_COUNT = 0;
+
 sub parse {
     my $self = shift;
 
-    my @list;
-    my @tmp;
-    for my $line (split /\n/, $self->slurp) {
-        if ($line =~ /^__(.+)__$/) {
-            push @list, join("\n", @tmp) if @list;
-            push @list, $1;
-            @tmp = ();
-            next;
-        }
-        push @tmp, $line;
-    }
-    push @list, join("\n", @tmp) if @list;
-
-    $self->{list} = +{ @list };
-    my @include = split /\n/, ($self->{list}->{INCLUDE} || '');
-    $self->{include} = \@include;
-    my @include_ext = split /\n/, ($self->{list}->{INCLUDE_EXT} || '');
-    $self->{include_ext} = \@include_ext;
+    my $script = $self->slurp;
+    my $package = join '::', __PACKAGE__, 'AnonClass', 'Num'.($ANON_CLASS_COUNT++);
+    my $code = "
+# line 1 $package.pm
+package $package; ## 
+BEGIN{ \$$package\::IN_THE_PARSE = 1 };
+# line 1 $self->{path}
+$script;
+# line 5 $package.pm
+sub path { '$self->{path}' }
+sub name { '$self->{name}' }
+JSTAPd::Suite::export(__PACKAGE__);
+1;";
+    eval $code;
+    $@ and die $@;
+    $self->{suite} = $package->new;
 }
-
-sub api { $_[0]->{list}->{API} || '' }
-
-sub include { @{ $_[0]->{include} } }
-sub html { $_[0]->{list}->{HTML} || '' }
-sub script { $_[0]->{list}->{SCRIPT} || '' }
 
 sub header {
     my($self, %args) = @_;
-    my $script = $self->script;
+    my $script = $self->suite->client_script;
 
     my $include = '';
-    $include .= qq{<script src="$_" type="text/javascript"></script>} for (@{ $self->{include_ext} }, @{ $self->{include} });
+    $include .= qq{<script src="$_" type="text/javascript"></script>} for ($self->suite->include_ex, $self->suite->include);
 
     my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $args{pre_script}, $include, $script;
 <script type="text/javascript">
@@ -242,8 +239,6 @@ try {
 HTML
 
 }
-
-sub body { $_[0]->html }
 
 sub build_html {
     my($self, $head, $body) = @_;

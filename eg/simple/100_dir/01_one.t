@@ -1,5 +1,8 @@
 use JSTAPd::Suite;
-__DATA__
-__SCRIPT__
+
+sub client_script {
+    return <<'DONE';
 tests(1);
 ok('done', 'done');
+DONE
+}

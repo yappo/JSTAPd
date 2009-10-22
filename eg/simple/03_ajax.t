@@ -1,6 +1,7 @@
 use JSTAPd::Suite;
-__DATA__
-__SCRIPT__
+
+sub client_script {
+    return <<'DONE';
 tests(5);
 setTimeout(function(){ ok(1, 'timeout'); }, 200);
 
@@ -19,11 +20,15 @@ function run_test1(){
 
 run_test1();
 setTimeout(function(){ run_test1() }, 400);
+DONE
+}
 
-__API__
-$GLOBAL->{i} ||= 0;
+sub server_api {
+    my($self, $global, $req, $method, $path) = @_;
+    $global->{i} ||= 0;
 
-if ($PATH eq '/api/get' && $METHOD eq 'GET') {
-    $GLOBAL->{i}++;
-    return "response body " . $GLOBAL->{i} . " - " . $PARAM->{i};
+    if ($path eq '/api/get' && $method eq 'GET') {
+        $global->{i}++;
+        return "response body " . $global->{i} . " - " . $req->param('i');
+    }
 }

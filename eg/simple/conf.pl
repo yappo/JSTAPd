@@ -1,7 +1,7 @@
 # JSTAPd config
 my $config = {
     jstapd_prefix => '____jstapd',
-    apiurl        => qr!^/api/!,
+    apiurl        => qr{^/(?!____jstapd(?:__api)|jslib/)},
 };
 $config->{urlmap} = [
     { qr!^/jslib/! => '../jslib/' },

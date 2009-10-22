@@ -28,7 +28,7 @@ sub _loader {
             next;
         }
         my $basename = $path->basename;
-        next unless $path =~ /\.jstap$/ || $basename eq 'index';
+        next unless $path =~ /\.t$/ || $basename eq 'index';
         my $stuff = JSTAPd::Contents->new( $basename => $path );
         push @contents, $stuff;
         $dir->{map}->{$basename} = $stuff;

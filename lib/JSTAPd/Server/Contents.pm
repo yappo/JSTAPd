@@ -69,7 +69,7 @@ sub AUTOLOAD {
         return _index(@_, \@chain);
     }
 
-    # foo.jstap
+    # foo.t
     $server->setup_session_tap($session, $path);
 
     my $content = $server->contents->fetch_file($basename, \@chain);

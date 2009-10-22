@@ -177,7 +177,8 @@ sub api_handler {
     if ($type eq 'get_next') {
         my $next_current = -1;
         if ($self->run_once) {
-            # for prove -vl jstap/foor/01_test.jstap
+            # for prove -vl jstap/foor/01_test.t
+            # or prove -vlr jstap
             $next_current = $self->get_session($session)->{current_path} = $self->{run_file}.'' unless $current_path;
             return $self->json_response(+{
                 session => $session,
@@ -191,7 +192,7 @@ sub api_handler {
             return if $is_last;
             my $args = shift;
             return if $args->{is_dir};
-            return unless $args->{name} =~ /\.jstap$/;
+            return unless $args->{name} =~ /\.t$/;
             if ($is_next) {
                 $next_current = $args->{path};
                 $is_last++;

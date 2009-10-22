@@ -262,7 +262,7 @@ sub build_index {
 sub _default_index {
     my %args = @_;
 
-    return sprintf <<'HTML', $args{jstapd_prefix}, $args{jstapd_prefix}, _default_tap_lib();
+    return sprintf <<'HTML', $args{jstapd_prefix}, $args{jstapd_prefix}, ($args{run_once} ? 'true' : 'false'), _default_tap_lib();
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
@@ -272,6 +272,7 @@ var jstapd_prefix = '/%s__api/';
 var contents_prefix = '/%s/contents/';
 var session = '';
 var path = '';
+var run_once = %s;
 
 %s
 
@@ -367,6 +368,8 @@ function all_tests_finish(){
         div2.innerHTML = 'Result: FAIL';
     }
     results.appendChild(div2);
+
+    if (run_once) get('exit', {}, function(r){});
 }
 
 function get_next(){
@@ -383,10 +386,17 @@ function get_next(){
     });
 }
 
+
 window.onload = function(){
-    tap$('make-test').onclick = function(){
+    var button = tap$('make-test');
+    if (run_once) {
+        button.style.display = 'none';
         get_next();
-    };
+    } else {
+        button.onclick = function(){
+            get_next();
+        };
+    }
 };
 })();
 

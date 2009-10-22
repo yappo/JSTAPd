@@ -13,6 +13,7 @@ use JSTAPd::TAP;
 sub contents { $_[0]->{contents} }
 sub conf { $_[0]->{conf} }
 sub jstapd_prefix { $_[0]->{conf}->{jstapd_prefix} }
+sub run_once { !!$_[0]->{run_file} }
 
 sub new {
     my($class, %opts) = @_;
@@ -22,6 +23,7 @@ sub new {
         port => 1978,
         host => '127.0.0.1',
         session_tap => +{},
+        stdout => *STDOUT,
         %opts,
     }, $class;
     $self->{dir} = Path::Class::Dir->new( $self->{dir} );
@@ -148,6 +150,15 @@ sub api_handler {
     my $current_path = $self->get_session($session)->{current_path};
     if ($type eq 'get_next') {
         my $next_current = -1;
+        if ($self->run_once) {
+            # for prove -vl jstap/foor/01_test.jstap
+            $next_current = $self->get_session($session)->{current_path} = $self->{run_file}.'' unless $current_path;
+            return $self->json_response(+{
+                session => $session,
+                path    => $next_current,
+            });
+        }
+
         my $is_next = $current_path ? 0 : 1;
         my $is_last = 0;
         $self->{contents}->visitor(sub{
@@ -183,6 +194,10 @@ sub api_handler {
                 status => 0,
             });
         }
+    } elsif ($type eq 'exit') {
+        return unless $self->run_once && ref($self->{destroy}) eq 'CODE';
+        my $tap = $self->get_tap($session, $current_path);
+        $self->{destroy}->($self->{stdout}, $tap);
     }
 
 

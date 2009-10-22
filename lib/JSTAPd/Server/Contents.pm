@@ -22,14 +22,14 @@ sub handler {
     unless (!$@ && ($klass->can($method) || $klass->can('AUTOLOAD'))) {
         return HTTP::Engine::Response->new( status => 404, body => 'Not Found' );
     }
-    warn "$klass -> $method : " . $req->uri;
+    warn "$klass -> $method : " . $req->uri unless $server->run_once;
     $klass->$method($server, $req, $session, $args);
 }
 
 # index page
 sub index {
     my($class, $server, $req, $session) = @_;
-    HTTP::Engine::Response->new( body => JSTAPd::Contents->build_index( jstapd_prefix => $server->jstapd_prefix ) );
+    HTTP::Engine::Response->new( body => JSTAPd::Contents->build_index( jstapd_prefix => $server->jstapd_prefix, run_once => $server->run_once ) );
 }
 
 package JSTAPd::Server::Contents::contents;

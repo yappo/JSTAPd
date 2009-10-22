@@ -1,3 +1,5 @@
+use JSTAPd::Suite;
+__DATA__
 __SCRIPT__
 tests(5);
 setTimeout(function(){ ok(1, 'timeout'); }, 200);

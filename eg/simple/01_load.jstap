@@ -1,3 +1,5 @@
+use JSTAPd::Suite;
+__DATA__
 __SCRIPT__
 tests(6);
 ok(1, 'ok 1');

@@ -227,12 +227,14 @@ try {
 <script type="text/javascript">
 (function(){
 window.onload = function(){
+setTimeout(function(){
 try {
 %s
     tap_done('');
 } catch(e) {
     tap_done(e);
 }
+}, 100);
 }
 })();
 </script>

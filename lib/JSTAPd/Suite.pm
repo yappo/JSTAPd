@@ -34,7 +34,7 @@ sub run_server {
 
     JSTAPd::Server->new(
         dir      => $dir,
-        host     => $ENV{JSTAP_HOST},
+        ($ENV{JSTAP_HOST} ? (host => $ENV{JSTAP_HOST}) : ()),
         port     => $port,
         run_file => $suite_file->relative($dir),
         destroy  => \&show_tap,

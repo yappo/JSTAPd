@@ -29,7 +29,7 @@ sub _loader {
         }
         my $basename = $path->basename;
         next unless $path =~ /\.t$/ || $basename eq 'index';
-        if ($self->{run_file}) {
+        if ($self->{run_file} && $basename ne 'index') {
             next unless $path->relative($self->{dir}) eq $self->{run_file};
         }
         my $stuff = JSTAPd::Contents->new( $basename => $path );

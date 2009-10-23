@@ -88,13 +88,14 @@ sub run {
             args   => {
                 host => $self->{host},
                 port => $self->{port},
+                print_banner => sub {},
             },
             request_handler => sub {
                 $self->handler(@_);
             },
         },
     );
-    warn "starting: $uri";
+    warn "starting: $uri" unless $self->auto_open;
     $self->{engine}->run;
 }
 

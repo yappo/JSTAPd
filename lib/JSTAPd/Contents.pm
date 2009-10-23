@@ -193,6 +193,15 @@ window.tap_dump = function(){
     });
 };
 
+window.pop_tap_request = function(cb){
+    enqueue(function(){
+        get('pop_tap_request', {}, function(r){
+            var json; eval('json = ' + r.responseText);
+            cb(json);
+        });
+    });
+};
+
 window.tap_addevent = function(target, event, callback, useCapture){
     if (target.addEventListener) {
         target.addEventListener(event, callback, useCapture);

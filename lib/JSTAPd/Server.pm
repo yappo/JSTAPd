@@ -109,6 +109,7 @@ sub setup_session_tap {
         return $self->{session_tap}->{$session}->{path}->{$path} ||= +{
             is_end => 0,
             tap    => JSTAPd::TAP->new,
+            ajax_request_stack => +[],
         };
     } else {
         return $self->{session_tap}->{$session};
@@ -141,7 +142,8 @@ sub handler {
     my $jstapd_prefix = $self->{conf}->{jstapd_prefix};
     my $apiurl        = $self->{conf}->{apiurl};
     my $res;
-    if (my($path) = $req->uri->path =~ m!^/$jstapd_prefix/(.+)?$!) {
+    if ($req->uri->path eq '/favicon.ico') {
+    } elsif (my($path) = $req->uri->path =~ m!^/$jstapd_prefix/(.+)?$!) {
         # serve jstapd contents
         $path = 'index' unless $path;
         $path .= 'index' if $path =~ m!/$! || !$path;
@@ -163,7 +165,15 @@ sub handler {
         my $current_path = $self->get_session($session)->{current_path};
         $res = JSTAPd::Server::Contents->handler("contents/$current_path", $self, $req, $session, { path => $current_path, is_api => 1 });
 
-    } elsif ($req->uri->path eq '/favicon.ico') {
+        # push request
+        my $param = $req->params;
+        push @{ $self->{ajax_request_stack} }, +{
+            method => $req->method,
+            path   => $req->uri->path,
+            query  => $req->uri->query,
+            param  => $param,
+        };
+
     } else {
         # ajax request?
         my $path = $self->decode_urlmap($req->uri->path);
@@ -225,6 +235,11 @@ sub api_handler {
                 status => 0,
             });
         }
+    } elsif ($type eq 'pop_tap_request') {
+        my $stack = $self->{ajax_request_stack};
+        $self->{ajax_request_stack} = +[];
+        return $self->json_response($stack);
+
     } elsif ($type eq 'exit') {
         return unless $self->run_once && ref($self->{destroy}) eq 'CODE';
         my $tap = $self->get_tap($session, $current_path);

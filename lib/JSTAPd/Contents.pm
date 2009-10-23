@@ -251,7 +251,7 @@ window.include = function(src, cb){
 
 var include_error = '';
 window.local_include = function(src, cb){
-    src += '?_='+(new Date).getTime()
+    src += '?_='+(new Date).getTime();
     local_include_list.push({ src: src, cb: cb });
     return;
     // XXX this code is some problem ...

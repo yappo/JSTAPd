@@ -193,6 +193,14 @@ window.tap_dump = function(){
     });
 };
 
+window.tap_addevent = function(target, event, callback, useCapture){
+    if (target.addEventListener) {
+        target.addEventListener(event, callback, useCapture);
+    } else if(target.attachEvent) {
+        target.attachEvent('on'+event, callback);
+    }
+}
+
 window.tap_xhr = function(){
     return xhr();
 };

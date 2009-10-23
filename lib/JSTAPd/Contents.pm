@@ -1,6 +1,7 @@
 package JSTAPd::Contents;
 use strict;
 use warnings;
+use FindBin;
 
 sub suite { $_[0]->{suite} }
 
@@ -36,7 +37,10 @@ sub path { '$self->{path}' }
 sub name { '$self->{name}' }
 JSTAPd::Suite::export(__PACKAGE__);
 1;";
-    eval $code;
+    do {
+        local $FindBin::Bin = $self->{path}->dir;
+        eval $code;
+    };
     $@ and die $@;
     $self->{suite} = $package->new;
 }

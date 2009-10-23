@@ -79,7 +79,10 @@ sub AUTOLOAD {
     }
 
     my @include = map {
-        "include('$_');"
+        ref($_) eq 'SCALAR' ? sprintf "include('/%s/js/%s')", $server->jstapd_prefix, ${ $_ } : "include('$_');"
+    } $content->suite->include_ex;
+    my @local_include = map {
+        "local_include('$_');"
     } $content->suite->include;
 
     my $index   = $server->contents->fetch_file('index', \@chain, 1);
@@ -89,7 +92,8 @@ sub AUTOLOAD {
                 jstapd_prefix => $server->jstapd_prefix,
                 session       => $session,
                 path          => $path,
-                pre_script    => join("\n", @include)."\n",
+                include       => join("\n", @include)."\n",
+                local_include => join("\n", @local_include)."\n",
             ),
             $content->suite->html_body,
         ),

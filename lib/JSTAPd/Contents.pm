@@ -45,8 +45,11 @@ sub header {
     my($self, %args) = @_;
     my $script = $self->suite->client_script;
 
-    my $include = '';
-    $include .= qq{<script src="$_" type="text/javascript"></script>} for ($self->suite->include_ex, $self->suite->include);
+    my $include = join "\n", map {
+        qq{<script src="$_" type="text/javascript"></script>}
+    } map {
+        ref($_) eq 'SCALAR' ? sprintf '/%s/js/%s', $args{jstapd_prefix}, ${ $_ } : $_
+    } ($self->suite->include_ex, $self->suite->include);
 
     my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $args{pre_script}, $include, $script;
 <script type="text/javascript">

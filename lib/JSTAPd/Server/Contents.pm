@@ -130,5 +130,48 @@ sub __run_api {
     }
 }
 
+package JSTAPd::Server::Contents::js;
+
+sub AUTOLOAD {
+    my($class, $server, $req, $session, $args) = @_;
+    my $path = our $AUTOLOAD;
+    $path =~ s/.+:://;
+    $path =~ s/\.js$//;
+    $path =~ s/-/_/;
+
+    my $body;
+    $body = $class->$path if $class->can($path);
+    return HTTP::Engine::Response->new( status => 404, body => 'Not Found' ) unless $body;
+    return HTTP::Engine::Response->new( body => $body );
+}
+
+sub jquery_jstapd {
+    return <<'DONE';
+(function ($) {
+
+$.fn.is_visible = function(num){
+    window.is($($(this).selector+':visible').length, num, $(this).selector + ' is visible ' + num + ' items');
+};
+
+$.fn.isnt_visible = function(){
+    var ret = 0;
+    if ($($(this).selector+':visible').length == 0) {
+        ret = 1;
+    }
+    window.ok(ret, $(this).selector + ' is not visible');
+};
+
+$.fn.is_formval = function(val){
+    window.is($(this).val(), val, $(this).selector + " form val() is '" + val + "'");
+};
+
+$.fn.like_formval = function(val){
+    window.like($(this).val(), val, $(this).selector + " form val() like '" + val.toString() + "'");
+};
+
+})(jQuery);
+DONE
+}
+
 1;
 

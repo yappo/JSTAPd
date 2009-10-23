@@ -2,7 +2,7 @@ use JSTAPd::Suite;
 
 sub client_script {
     return <<'DONE';
-tests(17);
+tests(19);
 setTimeout(function(){ ok(1, 'timeout'); }, 200);
 
 var i = 0;
@@ -40,20 +40,20 @@ var run_test3; run_test3 = function(){
 
     // check request data from server
     pop_tap_request(function(req){
-        is(req.length, 2, '2 requests')
-        is(req[0].method, 'GET'          , 'method 1')
-        is(req[0].path  , '/api/get'     , 'path 1')
-        is(req[0].query , 'key=value&i=1&_='+times[0], 'query 1')
-        is(req[0].param.key , 'value', 'param.key 1')
-        is(req[0].param.i   , '1'    , 'param.i 1')
-        is(req[0].param._   , times[0], 'param._ 1')
+        is(req.length, 2, '2 requests');
+        is(req[0].method, 'GET'          , 'method 1');
+        is(req[0].path  , '/api/get'     , 'path 1');
+        is(req[0].query , 'key=value&i=1&_='+times[0], 'query 1');
+        is(req[0].param.key , 'value', 'param.key 1');
+        is(req[0].param.i   , '1'    , 'param.i 1');
+        is(req[0].param._   , times[0], 'param._ 1');
 
-        is(req[1].method, 'GET'          , 'method 2')
-        is(req[1].path  , '/api/get'     , 'path 2')
-        is(req[1].query , 'key=value&i=2&_='+times[1], 'query 2')
-        is(req[1].param.key , 'value', 'param.key 2')
-        is(req[1].param.i   , '2'    , 'param.i 2')
-        is(req[1].param._   , times[1], 'param._ 2')
+        is(req[1].method, 'GET'          , 'method 2');
+        is(req[1].path  , '/api/get'     , 'path 2');
+        is(req[1].query , 'key=value&i=2&_='+times[1], 'query 2');
+        is(req[1].param.key , 'value', 'param.key 2');
+        is(req[1].param.i   , '2'    , 'param.i 2');
+        is(req[1].param._   , times[1], 'param._ 2');
 
         pop_tap_request(function(req){
             is(req.length, 0, 'empty request');

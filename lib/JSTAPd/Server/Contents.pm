@@ -165,6 +165,14 @@ $.fn.isnt_visible = function(){
     window.ok(ret, $(this).selector + ' is not visible');
 };
 
+$.fn.is_text = function(val){
+    window.is($(this).text(), val, $(this).selector + " text() is '" + val + "'");
+};
+
+$.fn.like_text = function(val){
+    window.like($(this).text(), val, $(this).selector + " text() like '" + val.toString() + "'");
+};
+
 $.fn.is_formval = function(val){
     window.is($(this).val(), val, $(this).selector + " form val() is '" + val + "'");
 };

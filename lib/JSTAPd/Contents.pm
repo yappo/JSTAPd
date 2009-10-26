@@ -141,7 +141,7 @@ window.like = function(got, expected, msg){
     var ret;
     var comment = '';
     try {
-        if (got.search(expected)) {
+        if (got.search(expected) >= 0) {
             ret = 'ok';
         } else {
             ret = 'not ok';

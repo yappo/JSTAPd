@@ -500,7 +500,7 @@ HTML
 }
 
 sub _default_tap_lib {
-    return <<'JS';
+    my $js =<<'JS';
 // tap lib
 
 // queue
@@ -559,6 +559,98 @@ window.tap$ = function(id){
 window.tap$tag = function(tag){
     return document.getElementsByTagName(tag)[0];
 };
+JS
+
+    return $js.__jstapdeferred_lib();
+}
+
+sub __jstapdeferred_lib {
+    return <<'JS';
+var id = 1;
+window.jstapDeferred = function(){
+    this.id = id++;
+}
+
+jstapDeferred.prototype = {
+    dnext: null,
+    error: null,
+    nextval: null,
+    retry: function(count, cb){
+        if (this.error) return;
+        var ret = cb();
+    },
+    next: function(cb, m){
+        this.dnext = new jstapDeferred();
+        this.dnext.cb = cb;
+        return this.dnext;
+    },
+    call: function(nextval){
+        if (this.error) return;
+        var retval;
+        try {
+            if (this.nextval !== null) nextval = this.nextval;
+            retval = this.cb.call(this, nextval);
+        } catch (e) {
+            this.error = e;
+        }
+        if (retval instanceof jstapDeferred) {
+            retval.dnext = this.dnext;
+            retval.dnext.nextval = nextval;
+        } else {
+            if (this.dnext) this.dnext.call(retval);
+        }
+    }
+};
+jstapDeferred.next = function(f){
+    var d = new jstapDeferred;
+    if (f) d.cb = f;
+    setTimeout(function(){ d.call() }, 0);
+    return d;
+};
+
+jstapDeferred.wait = function(t){
+    var d = new jstapDeferred;
+    setTimeout(function(){ d.call() }, t);
+    return d;
+};
+
+jstapDeferred.retry = function(c,f,o){
+    if (!o) o = {};
+    var t = o.wait || 0;
+    var d = new jstapDeferred;
+    var val;
+    var retry = function(){
+        if (d.dnext.nextval !== null) val = d.dnext.nextval;
+        d.dnext.nextval = null;
+        var ret = f(c, val);
+        if (ret) {
+            if (d.dnext.nextval ===  null) {
+                d.dnext.call(ret);
+            } else {
+                alert('NEXTVAL: ' + d.dnext.nextval);
+            }
+        } else if (--c <= 0) {
+            d.error = 'retry failed';
+        } else {
+            setTimeout(retry, t);
+        }
+    };
+    setTimeout(retry, 0);
+    return d;
+};
+
+jstapDeferred.register = function(n, f){
+    this.prototype[n] = function(){
+        var a = arguments;
+        return this.next(function (v) {
+            return f.apply(this, a);
+        });
+    };
+};
+
+jstapDeferred.register('wait', jstapDeferred.wait);
+jstapDeferred.register('retry', jstapDeferred.retry);
+
 JS
 }
 

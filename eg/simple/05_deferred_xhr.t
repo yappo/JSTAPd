@@ -30,7 +30,7 @@ next(function(){
         is(xhr.responseText, 'response body 2', 'GET RESPONSE BODY');
     };
     xhr.send(null);
-    }, 200);
+    }, 500);
 }).
 pop_request().
 next(function(req){
@@ -40,7 +40,7 @@ pop_request({ retry: 9, wait: 10 }).
 next(function(req){
     is(req.length, 0, 'pop_request 0 requests 3');
 }).
-pop_request({ retry: 20, wait: 10 }).
+pop_request({ retry: 50, wait: 10 }).
 next(function(req){
     is(req.length, 1, 'pop_request 1 requests 4');
     is(req[0].path, '/xhr', 'pop_request 1 path');

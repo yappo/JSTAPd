@@ -572,6 +572,7 @@ window.jstapDeferred = function(){
 }
 
 jstapDeferred.prototype = {
+    cb: function(v){ return v },
     dnext: null,
     error: null,
     nextval: null,
@@ -595,7 +596,7 @@ jstapDeferred.prototype = {
         }
         if (retval instanceof jstapDeferred) {
             retval.dnext = this.dnext;
-            retval.dnext.nextval = nextval;
+            if (retval.dnext !== null) retval.dnext.nextval = nextval;
         } else {
             if (this.dnext) this.dnext.call(retval);
         }
@@ -624,11 +625,7 @@ jstapDeferred.retry = function(c,f,o){
         d.dnext.nextval = null;
         var ret = f(c, val);
         if (ret) {
-            if (d.dnext.nextval ===  null) {
-                d.dnext.call(ret);
-            } else {
-                alert('NEXTVAL: ' + d.dnext.nextval);
-            }
+            d.dnext.call(ret);
         } else if (--c <= 0) {
             d.error = 'retry failed';
         } else {
@@ -636,6 +633,63 @@ jstapDeferred.retry = function(c,f,o){
         }
     };
     setTimeout(retry, 0);
+    return d;
+};
+
+
+jstapDeferred.xhr = function(o){
+    if (!o) o = {};
+
+    var url = o.url;
+    if (!url) throw 'url missing';
+    if (o.cache === false) {
+        var c = '_='+(new Date).getTime()
+        if (url.match(/\?/)) {
+            url += '&'+c;
+        } else {
+            url += '?'+c;
+        }
+    }
+
+    var r = xhr();
+    r.open(o.method, url);
+    var d = new jstapDeferred;
+    r.onreadystatechange = function() {
+        if (r.readyState != 4) return;
+        d.call(r);
+        return null;
+    };
+    r.send(null);
+    return d;
+};
+
+jstapDeferred.pop_request = function(o){
+    if (!o) o = {};
+    var retry = o.retry;
+    var wait  = o.wait || 0;
+
+    var d = new jstapDeferred;
+    var func = function(req){
+        d.dnext.nextval = req; // replace next value
+        d.call(req);
+        return null;
+    };
+
+    if (retry) {
+        var f = function(){
+            pop_tap_request(function(req){
+                if (req.length || --retry <= 0) {
+                    return func(req);
+                } else {
+                    // retry
+                    setTimeout(f, wait);
+                }
+            });
+        };
+        setTimeout(f, 0);
+    } else {
+        pop_tap_request(func);
+    }
     return d;
 };
 
@@ -650,6 +704,8 @@ jstapDeferred.register = function(n, f){
 
 jstapDeferred.register('wait', jstapDeferred.wait);
 jstapDeferred.register('retry', jstapDeferred.retry);
+jstapDeferred.register('xhr', jstapDeferred.xhr);
+jstapDeferred.register('pop_request', jstapDeferred.pop_request);
 
 JS
 }

@@ -200,29 +200,6 @@ window.tap_xhr = function(){
     return xhr();
 };
 
-
-var wait_queue_list = [];
-var wait_queue_running = false;
-window.wait_queue = function(cb){
-    wait_queue_list.push(cb);
-    if (wait_queue_running) return;
-    var watcher; watcher = function(){
-        if (is_dequeueing()) {
-            setTimeout(watcher, 10);
-            return;
-        }
-        var queue = wait_queue_list.shift();
-        queue();
-        if (wait_queue_list.length) {
-            setTimeout(watcher, 10);
-            return;
-        }
-        wait_queue_running = false;
-    };
-    setTimeout(watcher, 10);
-    wait_queue_running = true;
-};
-
 // for jstapDeferred
 
 // load js libs

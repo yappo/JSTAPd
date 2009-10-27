@@ -49,7 +49,7 @@ sub header {
     my($self, %args) = @_;
     my $script = $self->suite->client_script;
 
-    my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $args{include}, $args{local_include}, $script;
+    my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $args{include}, $script;
 <script type="text/javascript">
 (function(){
 var jstapd_prefix = '/%s__api/';
@@ -163,29 +163,14 @@ window.like = function(got, expected, msg){
 };
 
 window.tap_done = function(error){
-    var go_done = function(){
-        enqueue(function(){
-            get('tap_done', { error: error }, function(r){
-                var div = document.createElement("div");
-                div.innerHTML = r.responseText.replace(/\n/g, '<br>');
-                tap$tag('body').appendChild(div);
-                tap$('jstap_users_body_container').style.display = 'none';
-            })
-        });
-    };
-    if (tap_tests == 0 || error) {
-        go_done();
-    } else {
-        // async done mode
-        var do_async; do_async = function(){
-            if (tap_count >= tap_tests) {
-                go_done();
-            } else {
-                setTimeout(do_async, 10);
-            }
-        };
-        setTimeout(do_async, 10);
-    }
+    enqueue(function(){
+        get('tap_done', { error: error }, function(r){
+            var div = document.createElement("div");
+            div.innerHTML = r.responseText.replace(/\n/g, '<br>');
+            tap$tag('body').appendChild(div);
+            tap$('jstap_users_body_container').style.display = 'none';
+        })
+    });
 };
 
 window.tap_dump = function(){
@@ -215,70 +200,6 @@ window.tap_xhr = function(){
     return xhr();
 };
 
-var include_list = [];
-var local_include_list = [];
-window.local_include_load = function(){
-    include_list = local_include_list;
-    include_load();
-};
-window.include_load = function(){
-    wait_queue(function(){
-        for (i in include_list) {
-            enqueue((function(now){return function(){
-                var src = include_list[now].src;
-                var cb  = include_list[now].cb;
-                var script = document.createElement('script');
-                script.src = src;
-                is_include_loading++;
-                var onload = function(){
-                    if (cb && typeof cb == 'function') cb();
-                    is_include_loading--;
-                    dequeue();
-                };
-                if (typeof(script.onreadystatechange) == 'object') {
-                    script.onreadystatechange = function(){
-                        if (script.readyState != 'loaded' && script.readyState != 'complete') return;
-                        onload();
-                    };
-                } else {
-                    tap_addevent(script, 'load', onload);
-                }
-                tap$tag('body').appendChild(script);
-            }})(i));
-        }
-    });
-};
-
-window.include = function(src, cb){
-    include_list.push({ src:src, cb: cb });
-};
-
-var include_error = '';
-window.local_include = function(src, cb){
-    src += '?_='+(new Date).getTime();
-    local_include_list.push({ src: src, cb: cb });
-    return;
-    // XXX this code is some problem ...
-    enqueue(function(){
-        var r = xhr();
-        r.open('GET', src);
-        r.onreadystatechange = function() {
-            if (r.readyState != 4) return;
-            if (r.status != 200) throw new Error(src + ' is not found');
-            try {
-                eval('(function(){' + r.responseText + '})()');
-            } catch(e) {
-                include_error += e + "\n";
-                return;
-            }
-            local_include_list.push({ src:src, cb: cb });
-            is_xhr_running--;
-            dequeue();
-        }
-        is_xhr_running++;
-        r.send(null);
-    });
-};
 
 var wait_queue_list = [];
 var wait_queue_running = false;
@@ -301,30 +222,72 @@ window.wait_queue = function(cb){
     setTimeout(watcher, 10);
     wait_queue_running = true;
 };
+
+// for jstapDeferred
+
+// load js libs
+jstapDeferred.register('include', function(src){
+    var d = new jstapDeferred;
+    var script = document.createElement('script');
+    var onload = function(){ d.call() };
+    if (typeof(script.onreadystatechange) == 'object') {
+        script.onreadystatechange = function(){
+            if (script.readyState != 'loaded' && script.readyState != 'complete') return;
+            onload();
+        };
+    } else {
+        tap_addevent(script, 'load', onload);
+    }
+    script.src = src;
+    tap$tag('body').appendChild(script);
+    return d;
+});
+
+// waiting testing done
+jstapDeferred.register('wait_finish', function(){
+    var d = new jstapDeferred;
+    if (tap_tests == 0) {
+        d.call();
+    } else {
+        // async done mode
+        var do_async = function(){
+            if (tap_count >= tap_tests) {
+                d.call();
+            } else {
+                setTimeout(do_async, 10);
+            }
+        };
+        setTimeout(do_async, 10);
+    }
+    return d;
+});
+
+
 })();
 </script>
 <script type="text/javascript">
 (function(){
 window.onload = function(){
-    // external lib load
+
+jstapDeferred.next(function(){
+    // lib load
+    return jstapDeferred.next(function(){}).
 %s
-    include_load();
-    wait_queue(function(){
-        // local lib load
+    ;
+}).
+next(function(){
+   // run test
 %s
-        local_include_load();
-        wait_queue(function(){
-            // run test
-            try {
-%s
-                tap_done('');
-            } catch(e) {
-                tap_done(e);
-            }
-        });
-    });
+}).
+wait_finish().
+next(function(){
+    // done
+    tap_done('');
+});
 }
+
 })();
+
 </script>
 HTML
 
@@ -507,7 +470,6 @@ sub _default_tap_lib {
 var queue = [];
 var is_xhr_running = 0;
 var in_dequeueing  = false;
-var is_include_loading = 0;
 var dequeue = function(){
     if (_is_dequeueing()) return;
     in_dequeueing = true;
@@ -519,7 +481,7 @@ var enqueue = function(cb){
     queue.push(cb);
     dequeue();
 };
-var _is_dequeueing = function(){ return is_xhr_running || in_dequeueing || is_include_loading };
+var _is_dequeueing = function(){ return is_xhr_running || in_dequeueing };
 var is_dequeueing  = function(){ return _is_dequeueing() || queue.length };
 
 // ajax base

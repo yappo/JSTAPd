@@ -89,21 +89,21 @@ window.ok   = function(val, msg){
         });
     });
 };
-window.is   = function(got, expected, msg){
+window.is   = function(got, expected, msg, is_not){
     var ret;
     var comment = '';
     try {
         if (got == expected) {
-            ret = 'ok';
+            ret = is_not ? 'not ok' : 'ok';
         } else {
-            ret = 'not ok';
+            ret = is_not ? 'ok' : 'not ok';
         }
     } catch(e) {
         comment = e;
     }
 
     enqueue(function(){
-        tap('is', {
+        tap((is_not ? 'isnt' : 'is'), {
             ret: ret,
             num: (++tap_count),
             msg: msg,
@@ -114,28 +114,7 @@ window.is   = function(got, expected, msg){
     });
 };
 window.isnt = function(got, expected, msg){
-    var ret;
-    var comment = '';
-    try {
-        if (got != expected) {
-            ret = 'ok';
-        } else {
-            ret = 'not ok';
-        }
-    } catch(e) {
-        comment = e;
-    }
-
-    enqueue(function(){
-        tap('isnt', {
-            ret: ret,
-            num: (++tap_count),
-            msg: msg,
-            got: got,
-            expected: expected,
-            comment: comment
-        });
-    });
+    is(got, expected, msg, true);
 };
 window.like = function(got, expected, msg, is_not){
     var ret;

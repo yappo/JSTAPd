@@ -137,14 +137,14 @@ window.isnt = function(got, expected, msg){
         });
     });
 };
-window.like = function(got, expected, msg){
+window.like = function(got, expected, msg, is_not){
     var ret;
     var comment = '';
     try {
         if (got.search(expected) >= 0) {
-            ret = 'ok';
+            ret = is_not ? 'not ok' : 'ok';
         } else {
-            ret = 'not ok';
+            ret = is_not ? 'ok' : 'not ok';
         }
     } catch(e) {
         comment = e;
@@ -160,6 +160,9 @@ window.like = function(got, expected, msg){
             comment: comment
         });
     });
+};
+window.unlike = function(got, expected, msg){
+    like(got, expected, msg, true);
 };
 
 window.tap_done = function(error){

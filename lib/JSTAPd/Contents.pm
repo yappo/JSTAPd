@@ -130,7 +130,7 @@ window.like = function(got, expected, msg, is_not){
     }
 
     enqueue(function(){
-        tap('like', {
+        tap((is_not ? 'unlike' : 'like'), {
             ret: ret,
             num: (++tap_count),
             msg: msg,

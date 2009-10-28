@@ -49,7 +49,7 @@ sub header {
     my($self, %args) = @_;
     my $script = $self->suite->client_script;
 
-    my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $args{include}, $script;
+    my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $args{include} || 'nop()', $script;
 <script type="text/javascript">
 (function(){
 var jstapd_prefix = '/%s__api/';
@@ -558,7 +558,8 @@ jstapDeferred.prototype = {
         } else {
             if (this.dnext) this.dnext.call(retval);
         }
-    }
+    },
+    nop: function(r){ return r }
 };
 jstapDeferred.next = function(f){
     var d = new jstapDeferred;

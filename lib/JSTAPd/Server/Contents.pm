@@ -165,16 +165,32 @@ $.fn.is_text = function(val){
     window.is($(this).text(), val, $(this).selector + " text() is '" + val + "'");
 };
 
+$.fn.isnt_text = function(val){
+    window.isnt($(this).text(), val, $(this).selector + " text() is not '" + val + "'");
+};
+
 $.fn.like_text = function(val){
     window.like($(this).text(), val, $(this).selector + " text() like '" + val.toString() + "'");
+};
+
+$.fn.unlike_text = function(val){
+    window.unlike($(this).text(), val, $(this).selector + " text() unlike '" + val.toString() + "'");
 };
 
 $.fn.is_formval = function(val){
     window.is($(this).val(), val, $(this).selector + " form val() is '" + val + "'");
 };
 
+$.fn.isnt_formval = function(val){
+    window.isnt($(this).val(), val, $(this).selector + " form val() is not '" + val + "'");
+};
+
 $.fn.like_formval = function(val){
     window.like($(this).val(), val, $(this).selector + " form val() like '" + val.toString() + "'");
+};
+
+$.fn.unlike_formval = function(val){
+    window.unlike($(this).val(), val, $(this).selector + " form val() unlike '" + val.toString() + "'");
 };
 
 })(jQuery);

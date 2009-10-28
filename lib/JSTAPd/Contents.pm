@@ -239,6 +239,22 @@ jstapDeferred.register('wait_finish', function(){
     return d;
 });
 
+// wait dequeueing
+jstapDeferred.wait_dequeue = function(cb){ // cb is for test
+    var d = new jstapDeferred;
+    var wait = function(){
+        if (is_dequeueing()) {
+            if (cb && typeof(cb) == 'function') cb(false);
+            setTimeout(wait, 100);
+        } else {
+            if (cb && typeof(cb) == 'function') cb(true);
+            d.call();
+        }
+    };
+    setTimeout(wait, 0);
+    return d;
+};
+jstapDeferred.register('wait_dequeue', jstapDeferred.wait_dequeue);
 
 })();
 </script>

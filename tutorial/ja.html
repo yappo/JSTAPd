@@ -1,0 +1,557 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>JSTAPd::Tutorial::JA - JSTAPd::Tutorial 日本語版</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:_www@b02.apple.com" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#jstapd_�__�__">JSTAPd とは</a></li>
+	<li><a href="#�__�__�__�__�__�__">つかってみる</a></li>
+	<ul>
+
+		<li><a href="#�__�__�__�__�__�__�__">スケルトン作成</a></li>
+		<li><a href="#�__�__�__�__�_�__�__�__">テストを起動する</a></li>
+		<li><a href="#�__�__�__�__�__�__�__�__�__�__�__�__�__�_�__�__�__">コマンドラインからテストを起動する</a></li>
+		<ul>
+
+			<li><a href="#�_�__�_�__">事前準備</a></li>
+			<li><a href="#�__�__�__�__�__�__">実際に動かす</a></li>
+		</ul>
+
+	</ul>
+
+	<li><a href="#�__�__�__�__�__�_��__�__�_��__">ディレクトリ構成など</a></li>
+	<ul>
+
+		<li><a href="#index">index</a></li>
+		<ul>
+
+			<li><a href="#_head">$HEAD</a></li>
+			<li><a href="#_body">$BODY</a></li>
+		</ul>
+
+		<li><a href="#conf_pl">conf.pl</a></li>
+		<ul>
+
+			<li><a href="#jstapd_prefix">jstapd_prefix</a></li>
+			<li><a href="#apiurl">apiurl</a></li>
+			<li><a href="#urlmap">urlmap</a></li>
+			<li><a href="#auto_open_command">auto_open_command</a></li>
+		</ul>
+
+	</ul>
+
+	<li><a href="#__t_�__�__�__�__">*.t の書き方</a></li>
+	<ul>
+
+		<li><a href="#�__�__�__�__�__�__�__">必須モジュール</a></li>
+		<li><a href="#�__�__�__�__�_��__�__">定義可能な関数</a></li>
+		<li><a href="#sub_client_script___return__js__">sub client_script { return $JS }</a></li>
+		<li><a href="#sub_html_body___return__html__">sub html_body { return $HTML }</a></li>
+		<li><a href="#sub_server_api____">sub server_api { }</a></li>
+		<ul>
+
+			<li><a href="#_self">$self</a></li>
+			<li><a href="#_global">$global</a></li>
+			<li><a href="#_req">$req</a></li>
+			<li><a href="#_method">$method</a></li>
+			<li><a href="#_path">$path</a></li>
+		</ul>
+
+		<li><a href="#include">include</a></li>
+		<li><a href="#include_ex">include_ex</a></li>
+	</ul>
+
+	<li><a href="#jstapd_�___javascript_�__�__�__�__">JSTAPd の JavaScript の書き方</a></li>
+	<ul>
+
+		<li><a href="#�_��__">基本</a></li>
+		<ul>
+
+			<li><a href="#tests__testnum__">tests($testnum);</a></li>
+		</ul>
+
+		<li><a href="#ok__got_eq__expected___test_name__">ok($got eq $expected, $test_name);</a></li>
+		<li><a href="#is___got___expected___test_name___">is( $got, $expected, $test_name );</a></li>
+		<li><a href="#isnt___got___expected___test_name___">isnt( $got, $expected, $test_name );</a></li>
+		<li><a href="#like___got__new_regexp__________test_name___">like( $got, new RegExp('...'), $test_name );</a></li>
+		<li><a href="#unlike___got__new_regexp__________test_name___">unlike( $got, new RegExp('...'), $test_name );</a></li>
+		<li><a href="#tap_dump___">tap_dump();</a></li>
+		<ul>
+
+			<li><a href="#pop_tap_request_function_reqest_list_____">pop_tap_request(function(reqest_list){});</a></li>
+			<li><a href="#tap_xhr___">tap_xhr();</a></li>
+			<li><a href="#tap____domid___">tap$( $domid );</a></li>
+			<li><a href="#tap_tag___tagname___">tap$tag( $tagname );</a></li>
+		</ul>
+
+		<li><a href="#jstapdeferred">jstapDeferred</a></li>
+		<ul>
+
+			<li><a href="#jstapdeferred_next">jstapDeferred.next</a></li>
+			<li><a href="#jstapdeferred_wait___time___">jstapDeferred.wait( $time );</a></li>
+			<li><a href="#jstapdeferred_retry___retrycount__function_val______option___">jstapDeferred.retry( $retrycount, function(val){}, $option );</a></li>
+			<li><a href="#jstapdeferred_xhr___options___">jstapDeferred.xhr( $options );</a></li>
+			<li><a href="#jstapdeferred_pop_request___options___">jstapDeferred.pop_request( $options );</a></li>
+			<li><a href="#jstapdeferred_wait_dequeue__">jstapDeferred.wait_dequeue()</a></li>
+		</ul>
+
+		<li><a href="#jquery_plugin">jQuery plugin</a></li>
+		<ul>
+
+			<li><a href="#______is_visible_num_">$('').is_visible(num)</a></li>
+			<li><a href="#______isnt_visible__">$('').isnt_visible()</a></li>
+			<li><a href="#______is_text_val_">$('').is_text(val)</a></li>
+			<li><a href="#______isnt_text_val_">$('').isnt_text(val)</a></li>
+			<li><a href="#______like_text_new_regexp___">$('').like_text(new <code>RegExp())</code></a></li>
+			<li><a href="#______unlike_text_new_regexp___">$('').unlike_text(new <code>RegExp())</code></a></li>
+			<li><a href="#______is_formval_val_">$('').is_formval(val)</a></li>
+			<li><a href="#______isnt_formval_val_">$('').isnt_formval(val)</a></li>
+			<li><a href="#______like_formval_new_regexp___">$('').like_formval(new <code>RegExp())</code></a></li>
+			<li><a href="#______unlike_formval_new_regexp___">$('').unlike_formval(new <code>RegExp())</code></a></li>
+		</ul>
+
+	</ul>
+
+	<li><a href="#see_also">SEE ALSO</a></li>
+</ul>
+<!-- INDEX END -->
+
+<hr />
+<p>
+</p>
+<hr />
+<h1><a name="name">NAME</a></h1>
+<p>JSTAPd::Tutorial::JA - JSTAPd::Tutorial 日本語版</p>
+<p>
+</p>
+<hr />
+<h1><a name="jstapd_�__�__">JSTAPd とは</a></h1>
+<p>JSTAPd とは、 Ajax を使った JavaScript ライブラリ等を楽にテスト出来るために作られた Perl 製のテストツールです。</p>
+<p>Perl, JavaScript, HTML さえ書ければ誰でも Ajax な JavaScript のテストがかけます。</p>
+<p>テスト結果は、一般的なテストプロトコルである TAP で出力されるため、 prove コマンド等から通常の
+Perl の世界のテストのように実行するだけで、自動的にブラウザを立ち上げてテストを実行し、結果を prove の集計結果として見る事が可能です。</p>
+<p>JavaScript 側にも jsDeferred っぽいユーティリティを追加して書き易くはしています。</p>
+<p>ディストリビューションの eg ディレクトリ以下には、実際のサンプルテスト(JSTAPdの js code のテストとしても使ってる)が入っているので、それも参考にしてください。</p>
+<p>
+</p>
+<hr />
+<h1><a name="�__�__�__�__�__�__">つかってみる</a></h1>
+<p>
+</p>
+<h2><a name="�__�__�__�__�__�__�__">スケルトン作成</a></h2>
+<p>JSTAPd には scrips/jstapd というスクリプトがついているので、まずはそれを使ってスケルトンを作ります。</p>
+<pre>
+  $ ./scripts/jstapd -n foo
+  create foocreate foo/index
+  create foo/conf.pl
+  create foo/01_base.t</pre>
+<p>これで、 foo directory にテスト環境一式ができました。</p>
+<p>
+</p>
+<h2><a name="�__�__�__�__�_�__�__�__">テストを起動する</a></h2>
+<p>作成したテストは、 HTTP Server を立ち上げてブラウザでテストする事が出来ます。いうか、ブラウザでテストしなきゃいけません。</p>
+<pre>
+  $ ./scripts/jstapd -d foo
+  starting: <a href="http://127.0.0.1:1978/____jstapd/">http://127.0.0.1:1978/____jstapd/</a> at lib/JSTAPd/Server.pm line 98, &lt;DATA&gt; line 16.
+  HTTP::Engine::Interface::ServerSimple : You can connect to your server at <a href="http://127.0.0.1:1978/">http://127.0.0.1:1978/</a></pre>
+<p>これで <a href="http://127.0.0.1:1978/____jstapd/">http://127.0.0.1:1978/____jstapd/</a> にアクセスをするとテスト画面が出てきます。
+<strong>make test</strong> というボタンしか出ていないので、これをクリックしてください。</p>
+<pre>
+  01_base.t .. ok</pre>
+<p>という結果とともにテスト結果が表示されます。</p>
+<p><a href="http://127.0.0.1:1978/____jstapd/contents/01_base.t">http://127.0.0.1:1978/____jstapd/contents/01_base.t</a> に直接アクセスして個別のテストも可能です。</p>
+<p>
+</p>
+<h2><a name="�__�__�__�__�__�__�__�__�__�__�__�__�__�_�__�__�__">コマンドラインからテストを起動する</a></h2>
+<p>JSTAPd は prove コマンド等からテストを実行させる事が出来ます。
+JSTAP_AUTO_OPEN_COMMAND 環境変数を入れるか、後述の config.pl に設定を入れます。</p>
+<p>
+</p>
+<h3><a name="�_�__�_�__">事前準備</a></h3>
+<p>例えば、 Mac OS でかつ bash を使っている場合は、以下のようにすると自動的に Safari を立ち上げてテストしてくれます。
+これは、実際の開発シーンではとても便利です。</p>
+<pre>
+  $ export JSTAP_AUTO_OPEN_COMMAND='open -a Safari %s'</pre>
+<p><strong>%s</strong> には、テスト対象の URL が渡されますので、例えば他の環境に対しても JSTAP_AUTO_OPEN_COMMAND で使うコマンドに工夫を加えればテストが可能でしょう。</p>
+<p>ただし、 JSTAP_AUTO_OPEN_COMMAND を使った場合には window.close() を利用してブラウザを閉じているので、 Firefox の場合は Firefox のポリシーにより自動的に閉じられませんので注意してください</p>
+<p>
+</p>
+<h3><a name="�__�__�__�__�__�__">実際に動かす</a></h3>
+<p>動かしかたは簡単です。ただ実行するだけ。</p>
+<pre>
+  $ perl foo/01_base.t</pre>
+<p>これだけじゃ物足りないので prove しましょう。</p>
+<pre>
+  $ prove -v foo/01_base.t</pre>
+<p>もし複数のテストファイルを作ったり foo/100_hoge/ とかの多階層にテストを配置するならこうします。</p>
+<pre>
+  $ prove -vr foo</pre>
+<p>簡単ですね！</p>
+<p>
+</p>
+<hr />
+<h1><a name="�__�__�__�__�__�_��__�__�_��__">ディレクトリ構成など</a></h1>
+<p>テストディレクトリのベースには conf.pl と index ファイルが必須です。 jstapd -n foo で作成した場合には自動的に作成されるので気にしなくてもいいです。</p>
+<p>
+</p>
+<h2><a name="index">index</a></h2>
+<p>*.t ファイルで設定されたテストを HTML 化する時に使われるテンプレートです。</p>
+<p>foo/index と foo/bar/index が有った時に、 foo/bar/01.t を実行した場合は、 foo/bar/index が使われます。テストファイルの階層的に近い index が使われるのです。</p>
+<p>以下に、マクロの説明をします。</p>
+<p>
+</p>
+<h3><a name="_head">$HEAD</a></h3>
+<p>JSTAPd で使われる JavaScript のコードや &lt;script src=``...'' などが入ります。</p>
+<p>
+</p>
+<h3><a name="_body">$BODY</a></h3>
+<p>*.t ファイルで設定された HTML が入ります。 DOM 要素のテスト等で必要な DOM をここに入れるようにしてください。</p>
+<p>
+</p>
+<h2><a name="conf_pl">conf.pl</a></h2>
+<p>JSTAPd テストのグローバルな設定です。
+prove コマンドを使う時は、この conf.pl が有るディレクトリを root directory として検出しますので、必須です。</p>
+<p>Pure Perl で記述します。単純な HASH ref を作って返してください。</p>
+<p>以下に設定項目の説明をします。</p>
+<p>
+</p>
+<h3><a name="jstapd_prefix">jstapd_prefix</a></h3>
+<p>テストサーバのマウントポイントです。デフォルトは ____jstapd になります。</p>
+<p>
+</p>
+<h3><a name="apiurl">apiurl</a></h3>
+<p>あなたがテストしたいアプリの Ajax API を検出するために利用します。
+/js/ 等に js ファイルをサーブしてる場合には、 js ディレクトリも含めてください。</p>
+<p>
+</p>
+<h3><a name="urlmap">urlmap</a></h3>
+<p>/js/ ディレクトリの中に独自ライブラリ等が入っていた場合の為のディレクトリマッピングを設定出来ます。</p>
+<p>/js/ ディレクトリの中身が /var/www/htdocs/js/ 以下に入っていたら</p>
+<pre>
+  $config-&gt;{urlmap} = [
+      +{
+          qr!^/js/! =&gt; '/var/www/htdocs/js/',
+      },
+  ];</pre>
+<p>と設定してください。</p>
+<p>ARRAY の順番通りにパターンマッチが試みられます。</p>
+<p>
+</p>
+<h3><a name="auto_open_command">auto_open_command</a></h3>
+<p>先述の JSTAP_AUTO_OPEN_COMMAND 環境変数と意味は同じです。</p>
+<p>
+</p>
+<hr />
+<h1><a name="__t_�__�__�__�__">*.t の書き方</a></h1>
+<p>JSTAPd で正しく動くテストファイルの書き方を説明します。</p>
+<p>Perl で書かれたテストコードの中に JavaScript, HTML を書く事になるようにも見えますが、別途ファイルを別けてしまって、それを読み込むようにしても構わないし、 Perl でコードを生成して似たようなテストコードを自動生成しても構いません。</p>
+<p>
+</p>
+<h2><a name="�__�__�__�__�__�__�__">必須モジュール</a></h2>
+<p><a href="/JSTAPd/Suite.html">the JSTAPd::Suite manpage</a> を必ず use してください。 これを load する事により、 prove コマンドでいい具合に実行してくれたり、 jstapd server を立ち上げた時に良い感じにしてくれます。
+他は必須ではありません。</p>
+<p>
+</p>
+<h2><a name="�__�__�__�__�_��__�__">定義可能な関数</a></h2>
+<p>.t ファイルに次に説明する関数を定義するだけでいい具合に動きます。
+もし、未定義の場合には JSTAPd::Suite が良い感じにしてくれるので心配いりません。</p>
+<p>
+</p>
+<h2><a name="sub_client_script___return__js__">sub client_script { return $JS }</a></h2>
+<p>ブラウザにテストさせたい JavaScript のコードを戻してください。</p>
+<p>
+</p>
+<h2><a name="sub_html_body___return__html__">sub html_body { return $HTML }</a></h2>
+<p>&lt;body&gt;&lt;/body&gt; の中に書く HTML を戻してください。</p>
+<p>
+</p>
+<h2><a name="sub_server_api____">sub server_api { }</a></h2>
+<p>Ajax API のサーバ側のモックアップです。
+実際に利用しているサーバのコードを動かしてもいいし、簡単なモックアップを書くのでもいいです。</p>
+<pre>
+  sub server_api {
+      my($self, $global, $req, $method, $path) = @_;
+      return { ... }; # or return [ ... ] or return 'strings'
+  }</pre>
+<p>戻り値はオブジェクトでも文字列でも構いません。オブジェクトの場合は <a href="/JSON/XS.html">the JSON::XS manpage</a> にて JSON encode された結果が戻ります。
+JSON::XS が使われるのが嫌な場合には、自前で文字列化してください。</p>
+<p>以下に server_api に渡される引数の説明をします。</p>
+<p>
+</p>
+<h3><a name="_self">$self</a></h3>
+<p>テストのインスタンス。例えば .t ファイルに foo という関数を定義してたら $self-&gt;foo という形でメソッド呼び出し可能。</p>
+<p>
+</p>
+<h3><a name="_global">$global</a></h3>
+<p>テストセッションで有効なグローバルな領域。</p>
+<p>そのテストファイルのテストセッション中に有効になってる stash のような物です。
+複数のブラウザで同時にテストをかけていても、値は混ざりません。</p>
+<p>
+</p>
+<h3><a name="_req">$req</a></h3>
+<p><a href="/HTTP/Engine/Request.html">the HTTP::Engine::Request manpage</a> のリクエストオブジェクトです。</p>
+<p>
+</p>
+<h3><a name="_method">$method</a></h3>
+<p>request method です。 GET とか PUT とか。</p>
+<p>
+</p>
+<h3><a name="_path">$path</a></h3>
+<p>request path です。</p>
+<p>
+</p>
+<h2><a name="include">include</a></h2>
+<p>script タグで読み込ませる js ライブラリを指定してください。
+自作のライブラリ等を、こっちに指定します。</p>
+<p>将来的に、ライブラリ自体の正当性チェックも入れます。</p>
+<p>複数有る場合は、配列として指定します。</p>
+<p>
+</p>
+<h2><a name="include_ex">include_ex</a></h2>
+<p>script タグで読み込ませる js ライブラリを指定してください。</p>
+<p>こちらは外部サイトのスクリプト(google ajax api 等)をいれてください。</p>
+<p>
+</p>
+<hr />
+<h1><a name="jstapd_�___javascript_�__�__�__�__">JSTAPd の JavaScript の書き方</a></h1>
+<p>JSTAPd は js のテストを Perl の作法っぽく書くための方法を用意しています。</p>
+<p>また、冒頭で述べた jstapDeferred を使う事により非同期処理を順番にテストしていけます。</p>
+<p>
+</p>
+<h2><a name="�_��__">基本</a></h2>
+<p>テストを行うための基本的な組み込み関数です。
+これらの関数は window に直接生えています。</p>
+<p>特に説明の無い物は、 Test::More のそれと同じと考えてください。</p>
+<p>
+</p>
+<h3><a name="tests__testnum__">tests($testnum);</a></h3>
+<p>テストの数を入れます。
+ようするに、 is, ok, like 等がどんだけ実行されるべきであるかの数です。</p>
+<p><code>done_testing()</code> は有りません。 JSTAPd が関与しない独自ライブラリなどでの Ajax などの非同期なコードがいつ確実に終わるかという事を考えるのが大変だからです。</p>
+<p>
+</p>
+<h2><a name="ok__got_eq__expected___test_name__">ok($got eq $expected, $test_name);</a></h2>
+<p>
+</p>
+<h2><a name="is___got___expected___test_name___">is( $got, $expected, $test_name );</a></h2>
+<p>
+</p>
+<h2><a name="isnt___got___expected___test_name___">isnt( $got, $expected, $test_name );</a></h2>
+<p>
+</p>
+<h2><a name="like___got__new_regexp__________test_name___">like( $got, new RegExp('...'), $test_name );</a></h2>
+<p>
+</p>
+<h2><a name="unlike___got__new_regexp__________test_name___">unlike( $got, new RegExp('...'), $test_name );</a></h2>
+<p>それぞれ Test::More のそれと同じです。</p>
+<p>
+</p>
+<h2><a name="tap_dump___">tap_dump();</a></h2>
+<p>今までの結果をコンソールにダンプします。</p>
+<p>
+</p>
+<h3><a name="pop_tap_request_function_reqest_list_____">pop_tap_request(function(reqest_list){});</a></h3>
+<p>いままで Ajax API にリクエストした時のリクエストの情報を array にして callback function に引数として実行します。
+一度 pop したら二度と同じものは戻りません。</p>
+<p>
+</p>
+<h3><a name="tap_xhr___">tap_xhr();</a></h3>
+<p>XHR オブジェクトを返します。生 Ajax したい人むけ。</p>
+<p>
+</p>
+<h3><a name="tap____domid___">tap$( $domid );</a></h3>
+<pre>
+  return document.getElementById($domid);</pre>
+<p>してるだけ。</p>
+<p>
+</p>
+<h3><a name="tap_tag___tagname___">tap$tag( $tagname );</a></h3>
+<pre>
+  return document.getElementsByTagName($tagname)[0];</pre>
+<p>してるだけ。</p>
+<p>
+</p>
+<h2><a name="jstapdeferred">jstapDeferred</a></h2>
+<p>JSTAPd は結構非同期してますが、これを直列的にテストを実行してくれるしくみです。</p>
+<p>cho45 作の jsDefrerred を参考にして作ってあります。</p>
+<p>JSTAPd の client_script で指定されたスクリプトの、この jstapDeferred の next の中で実行されています。</p>
+<p>
+</p>
+<h3><a name="jstapdeferred_next">jstapDeferred.next</a></h3>
+<p>基本的な next の使い方で、どんどん次の next にチェインして実行します。</p>
+<pre>
+  jstapDeferred.next(function(){
+      return 'value';
+  }).
+  next(function(val){
+      is(val, 'value');
+  });</pre>
+<p>next の戻り値に jstapDeferred のインスタンスを指定すると、次の next の直前に割り込む事ができます。</p>
+<pre>
+  jstapDeferred.next(function(){
+      // 1
+      return jstapDeferred.next(function(){
+          // 2
+      }).
+      next(function(){
+          // 3
+      });
+  }).
+  next(function(val){
+      // 4
+  });</pre>
+<p>
+</p>
+<h3><a name="jstapdeferred_wait___time___">jstapDeferred.wait( $time );</a></h3>
+<p>指定した msec 待ってから次の next を呼び出します。</p>
+<pre>
+  jstapDeferred.wait(1000).
+  next(function(val){
+      // 1秒後に実行
+  });</pre>
+<p>メッソッドチェーンの間でも使えます</p>
+<pre>
+  jstapDeferred.next(function(){}).
+  wait(1000).
+  next(function(val){
+      // 1秒後に実行
+  });</pre>
+<p>
+</p>
+<h3><a name="jstapdeferred_retry___retrycount__function_val______option___">jstapDeferred.retry( $retrycount, function(val){}, $option );</a></h3>
+<p>callback が値を返すまで $retrycount の回数だけ callback を呼び続けます。
+option.wait が指定されると指定された msec 待ってから retry します。</p>
+<p>retry しても callback が値を返さなければ次以降のチェーンは実行されません。</p>
+<pre>
+  jstapDeferred.retry(10, function(){
+      // なにか値を return するまで 10 回繰り返す
+  }).
+  next(function(val){
+      // callback の retry した値が val に入ってる
+  });</pre>
+<p>メッソッドチェーンの間でも使えます</p>
+<pre>
+  jstapDeferred.next(function(){
+      return 'value';
+  }).
+  retry(10, function(count, val){
+      is(val, 'value');
+      // なにか値を return するまで 10 回繰り返す
+  }).
+  next(function(val){
+      // callback の retry した値が val に入ってる
+  });</pre>
+<p>
+</p>
+<h3><a name="jstapdeferred_xhr___options___">jstapDeferred.xhr( $options );</a></h3>
+<p>$options の内容で XHR を実行して r.readyState == 4 になったら、 次のチェーンに進みます。</p>
+<pre>
+    jstapDeferred.xhr({
+        method: 'GET',
+        uri: '/foo/var',
+        cache: false
+    }).
+    next(function(req){
+        is(req.readyState, 4);
+        like(req.responseText, new RegExp('.'));
+    });</pre>
+<p>メッソッドチェーンの間でも使えます</p>
+<p>
+</p>
+<h3><a name="jstapdeferred_pop_request___options___">jstapDeferred.pop_request( $options );</a></h3>
+<p>jstapDeferred 組み込みの pop_tap_request</p>
+<pre>
+    jstapDeferred.pop_request({
+        retry: 100, // 100 回リトライ
+        wait: 100  // リトライは 100 msec おき
+    }).
+    next(function(req_list){
+        // pop_tap_request の callback に渡される引数が req_list に入る
+    });</pre>
+<p>メッソッドチェーンの間でも使えます</p>
+<p>
+</p>
+<h3><a name="jstapdeferred_wait_dequeue__">jstapDeferred.wait_dequeue()</a></h3>
+<p>ok(), is(), <code>like()</code> などは非同期的に server に結果を送っているので、 server にこれらの結果を送り終わるまで wait してくれる為の物です。</p>
+<pre>
+  jstapDeferred.next(function(){
+      ok(1);
+  }).
+  wait_dequeue().
+  next(function(){
+      // 上の ok(1) は、すでにサーバで処理された後
+  });</pre>
+<p>
+</p>
+<h2><a name="jquery_plugin">jQuery plugin</a></h2>
+<p>JSTAPd では、 ok, is 等を jQuery から便利に使える為の jQuery plugin を標準で提供しています</p>
+<p>利用する為には</p>
+<pre>
+  sub include_ex {
+      (
+          ...,
+          \'jquery-jstapd.js',
+      )
+  }</pre>
+<p>等として、リファレンス渡しで include を指定してください。</p>
+<p>
+</p>
+<h3><a name="______is_visible_num_">$('').is_visible(num)</a></h3>
+<p>指定したセレクタに適合する要素のうち表示可能に要素が num 個あればテストが成功します。</p>
+<p>
+</p>
+<h3><a name="______isnt_visible__">$('').isnt_visible()</a></h3>
+<p>指定したセレクタに適合する要素のうち表示可能な要素が一つもなければテストが成功します。</p>
+<p>
+</p>
+<h3><a name="______is_text_val_">$('').is_text(val)</a></h3>
+<p>指定したセレクタの <code>text()</code> の内容が val と一致すれば OK</p>
+<p>
+</p>
+<h3><a name="______isnt_text_val_">$('').isnt_text(val)</a></h3>
+<p>指定したセレクタの <code>text()</code> の内容が val と一致しなければ OK</p>
+<p>
+</p>
+<h3><a name="______like_text_new_regexp___">$('').like_text(new <code>RegExp())</code></a></h3>
+<p>指定したセレクタの <code>text()</code> の内容が正規表現と一致すれば OK</p>
+<p>
+</p>
+<h3><a name="______unlike_text_new_regexp___">$('').unlike_text(new <code>RegExp())</code></a></h3>
+<p>指定したセレクタの <code>text()</code> の内容が正規表現と一致しなければ OK</p>
+<p>
+</p>
+<h3><a name="______is_formval_val_">$('').is_formval(val)</a></h3>
+<p>指定したセレクタの <code>val()</code> の内容が val と一致すれば OK</p>
+<p>
+</p>
+<h3><a name="______isnt_formval_val_">$('').isnt_formval(val)</a></h3>
+<p>指定したセレクタの <code>val()</code> の内容が val と一致しなければ OK</p>
+<p>
+</p>
+<h3><a name="______like_formval_new_regexp___">$('').like_formval(new <code>RegExp())</code></a></h3>
+<p>指定したセレクタの <code>val()</code> の内容が正規表現と一致すれば OK</p>
+<p>
+</p>
+<h3><a name="______unlike_formval_new_regexp___">$('').unlike_formval(new <code>RegExp())</code></a></h3>
+<p>指定したセレクタの <code>val()</code> の内容が正規表現と一致しなければ OK</p>
+<p>
+</p>
+<hr />
+<h1><a name="see_also">SEE ALSO</a></h1>
+<p>デモ用の動画も一緒にどうぞ。
+<a href="http://www.screencast.com/t/wDPLe10aU">http://www.screencast.com/t/wDPLe10aU</a></p>
+
+</body>
+
+</html>

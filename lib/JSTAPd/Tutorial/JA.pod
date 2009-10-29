@@ -1,0 +1,453 @@
+=encoding utf8
+
+=head1 NAME
+
+JSTAPd::Tutorial::JA - JSTAPd::Tutorial 日本語版
+
+=head1 JSTAPd とは
+
+JSTAPd とは、 Ajax を使った JavaScript ライブラリ等を楽にテスト出来るために作られた Perl 製のテストツールです。
+
+Perl, JavaScript, HTML さえ書ければ誰でも Ajax な JavaScript のテストがかけます。
+
+テスト結果は、一般的なテストプロトコルである TAP で出力されるため、 prove コマンド等から通常の
+Perl の世界のテストのように実行するだけで、自動的にブラウザを立ち上げてテストを実行し、結果を prove の集計結果として見る事が可能です。
+
+JavaScript 側にも jsDeferred っぽいユーティリティを追加して書き易くはしています。
+
+ディストリビューションの eg ディレクトリ以下には、実際のサンプルテスト(JSTAPdの js code のテストとしても使ってる)が入っているので、それも参考にしてください。
+
+=head1 つかってみる
+
+=head2 スケルトン作成
+
+JSTAPd には scrips/jstapd というスクリプトがついているので、まずはそれを使ってスケルトンを作ります。
+
+  $ ./scripts/jstapd -n foo
+  create foocreate foo/index
+  create foo/conf.pl
+  create foo/01_base.t
+
+これで、 foo directory にテスト環境一式ができました。
+
+=head2 テストを起動する
+
+作成したテストは、 HTTP Server を立ち上げてブラウザでテストする事が出来ます。いうか、ブラウザでテストしなきゃいけません。
+
+  $ ./scripts/jstapd -d foo
+  starting: http://127.0.0.1:1978/____jstapd/ at lib/JSTAPd/Server.pm line 98, <DATA> line 16.
+  HTTP::Engine::Interface::ServerSimple : You can connect to your server at http://127.0.0.1:1978/
+
+これで http://127.0.0.1:1978/____jstapd/ にアクセスをするとテスト画面が出てきます。
+B<make test> というボタンしか出ていないので、これをクリックしてください。
+
+  01_base.t .. ok
+
+という結果とともにテスト結果が表示されます。
+
+http://127.0.0.1:1978/____jstapd/contents/01_base.t に直接アクセスして個別のテストも可能です。
+
+=head2 コマンドラインからテストを起動する
+
+JSTAPd は prove コマンド等からテストを実行させる事が出来ます。
+JSTAP_AUTO_OPEN_COMMAND 環境変数を入れるか、後述の config.pl に設定を入れます。
+
+=head3 事前準備
+
+例えば、 Mac OS でかつ bash を使っている場合は、以下のようにすると自動的に Safari を立ち上げてテストしてくれます。
+これは、実際の開発シーンではとても便利です。
+
+  $ export JSTAP_AUTO_OPEN_COMMAND='open -a Safari %s'
+
+B<%s> には、テスト対象の URL が渡されますので、例えば他の環境に対しても JSTAP_AUTO_OPEN_COMMAND で使うコマンドに工夫を加えればテストが可能でしょう。
+
+ただし、 JSTAP_AUTO_OPEN_COMMAND を使った場合には window.close() を利用してブラウザを閉じているので、 Firefox の場合は Firefox のポリシーにより自動的に閉じられませんので注意してください
+
+=head3 実際に動かす
+
+動かしかたは簡単です。ただ実行するだけ。
+
+  $ perl foo/01_base.t
+
+これだけじゃ物足りないので prove しましょう。
+
+  $ prove -v foo/01_base.t
+
+もし複数のテストファイルを作ったり foo/100_hoge/ とかの多階層にテストを配置するならこうします。
+
+  $ prove -vr foo
+
+簡単ですね！
+
+=head1 ディレクトリ構成など
+
+テストディレクトリのベースには conf.pl と index ファイルが必須です。 jstapd -n foo で作成した場合には自動的に作成されるので気にしなくてもいいです。
+
+=head2 index
+
+*.t ファイルで設定されたテストを HTML 化する時に使われるテンプレートです。
+
+foo/index と foo/bar/index が有った時に、 foo/bar/01.t を実行した場合は、 foo/bar/index が使われます。テストファイルの階層的に近い index が使われるのです。
+
+以下に、マクロの説明をします。
+
+=head3 $HEAD
+
+JSTAPd で使われる JavaScript のコードや <script src="..." などが入ります。
+
+=head3 $BODY
+
+*.t ファイルで設定された HTML が入ります。 DOM 要素のテスト等で必要な DOM をここに入れるようにしてください。
+
+=head2 conf.pl
+
+JSTAPd テストのグローバルな設定です。
+prove コマンドを使う時は、この conf.pl が有るディレクトリを root directory として検出しますので、必須です。
+
+Pure Perl で記述します。単純な HASH ref を作って返してください。
+
+以下に設定項目の説明をします。
+
+=head3 jstapd_prefix
+
+テストサーバのマウントポイントです。デフォルトは ____jstapd になります。
+
+=head3 apiurl
+
+あなたがテストしたいアプリの Ajax API を検出するために利用します。
+/js/ 等に js ファイルをサーブしてる場合には、 js ディレクトリも含めてください。
+
+=head3 urlmap
+
+/js/ ディレクトリの中に独自ライブラリ等が入っていた場合の為のディレクトリマッピングを設定出来ます。
+
+/js/ ディレクトリの中身が /var/www/htdocs/js/ 以下に入っていたら
+
+  $config->{urlmap} = [
+      +{
+          qr!^/js/! => '/var/www/htdocs/js/',
+      },
+  ];
+
+と設定してください。
+
+ARRAY の順番通りにパターンマッチが試みられます。
+
+=head3 auto_open_command
+
+先述の JSTAP_AUTO_OPEN_COMMAND 環境変数と意味は同じです。
+
+=head1 *.t の書き方
+
+JSTAPd で正しく動くテストファイルの書き方を説明します。
+
+Perl で書かれたテストコードの中に JavaScript, HTML を書く事になるようにも見えますが、別途ファイルを別けてしまって、それを読み込むようにしても構わないし、 Perl でコードを生成して似たようなテストコードを自動生成しても構いません。
+
+=head2 必須モジュール
+
+L<JSTAPd::Suite> を必ず use してください。 これを load する事により、 prove コマンドでいい具合に実行してくれたり、 jstapd server を立ち上げた時に良い感じにしてくれます。
+他は必須ではありません。
+
+=head2 定義可能な関数
+
+.t ファイルに次に説明する関数を定義するだけでいい具合に動きます。
+もし、未定義の場合には JSTAPd::Suite が良い感じにしてくれるので心配いりません。
+
+=head2 sub client_script { return $JS }
+
+ブラウザにテストさせたい JavaScript のコードを戻してください。
+
+=head2 sub html_body { return $HTML }
+
+<body></body> の中に書く HTML を戻してください。
+
+=head2 sub server_api { }
+
+Ajax API のサーバ側のモックアップです。
+実際に利用しているサーバのコードを動かしてもいいし、簡単なモックアップを書くのでもいいです。
+
+  sub server_api {
+      my($self, $global, $req, $method, $path) = @_;
+      return { ... }; # or return [ ... ] or return 'strings'
+  }
+
+戻り値はオブジェクトでも文字列でも構いません。オブジェクトの場合は L<JSON::XS> にて JSON encode された結果が戻ります。
+JSON::XS が使われるのが嫌な場合には、自前で文字列化してください。
+
+以下に server_api に渡される引数の説明をします。
+
+=head3 $self
+
+テストのインスタンス。例えば .t ファイルに foo という関数を定義してたら $self->foo という形でメソッド呼び出し可能。
+
+=head3 $global
+
+テストセッションで有効なグローバルな領域。
+
+そのテストファイルのテストセッション中に有効になってる stash のような物です。
+複数のブラウザで同時にテストをかけていても、値は混ざりません。
+
+=head3 $req
+
+L<HTTP::Engine::Request> のリクエストオブジェクトです。
+
+=head3 $method
+
+request method です。 GET とか PUT とか。
+
+=head3 $path
+
+request path です。
+
+=head2 include
+
+script タグで読み込ませる js ライブラリを指定してください。
+自作のライブラリ等を、こっちに指定します。
+
+将来的に、ライブラリ自体の正当性チェックも入れます。
+
+複数有る場合は、配列として指定します。
+
+=head2 include_ex
+
+script タグで読み込ませる js ライブラリを指定してください。
+
+こちらは外部サイトのスクリプト(google ajax api 等)をいれてください。
+
+=head1 JSTAPd の JavaScript の書き方
+
+JSTAPd は js のテストを Perl の作法っぽく書くための方法を用意しています。
+
+また、冒頭で述べた jstapDeferred を使う事により非同期処理を順番にテストしていけます。
+
+=head2 基本
+
+テストを行うための基本的な組み込み関数です。
+これらの関数は window に直接生えています。
+
+特に説明の無い物は、 Test::More のそれと同じと考えてください。
+
+=head3 tests($testnum);
+
+テストの数を入れます。
+ようするに、 is, ok, like 等がどんだけ実行されるべきであるかの数です。
+
+done_testing() は有りません。 JSTAPd が関与しない独自ライブラリなどでの Ajax などの非同期なコードがいつ確実に終わるかという事を考えるのが大変だからです。
+
+=head2 ok($got eq $expected, $test_name);
+
+=head2 is( $got, $expected, $test_name );
+
+=head2 isnt( $got, $expected, $test_name );
+
+=head2 like( $got, new RegExp('...'), $test_name );
+
+=head2 unlike( $got, new RegExp('...'), $test_name );
+
+それぞれ Test::More のそれと同じです。
+
+=head2 tap_dump();
+
+今までの結果をコンソールにダンプします。
+
+=head3 pop_tap_request(function(reqest_list){});
+
+いままで Ajax API にリクエストした時のリクエストの情報を array にして callback function に引数として実行します。
+一度 pop したら二度と同じものは戻りません。
+
+=head3 tap_xhr();
+
+XHR オブジェクトを返します。生 Ajax したい人むけ。
+
+=head3 tap$( $domid );
+
+  return document.getElementById($domid);
+
+してるだけ。
+
+=head3 tap$tag( $tagname );
+
+  return document.getElementsByTagName($tagname)[0];
+
+してるだけ。
+
+=head2 jstapDeferred
+
+JSTAPd は結構非同期してますが、これを直列的にテストを実行してくれるしくみです。
+
+cho45 作の jsDefrerred を参考にして作ってあります。
+
+JSTAPd の client_script で指定されたスクリプトの、この jstapDeferred の next の中で実行されています。
+
+=head3 jstapDeferred.next
+
+基本的な next の使い方で、どんどん次の next にチェインして実行します。
+
+  jstapDeferred.next(function(){
+      return 'value';
+  }).
+  next(function(val){
+      is(val, 'value');
+  });
+
+next の戻り値に jstapDeferred のインスタンスを指定すると、次の next の直前に割り込む事ができます。
+
+  jstapDeferred.next(function(){
+      // 1
+      return jstapDeferred.next(function(){
+          // 2
+      }).
+      next(function(){
+          // 3
+      });
+  }).
+  next(function(val){
+      // 4
+  });
+
+
+=head3 jstapDeferred.wait( $time );
+
+指定した msec 待ってから次の next を呼び出します。
+
+  jstapDeferred.wait(1000).
+  next(function(val){
+      // 1秒後に実行
+  });
+
+メッソッドチェーンの間でも使えます
+
+  jstapDeferred.next(function(){}).
+  wait(1000).
+  next(function(val){
+      // 1秒後に実行
+  });
+
+=head3 jstapDeferred.retry( $retrycount, function(val){}, $option );
+
+callback が値を返すまで $retrycount の回数だけ callback を呼び続けます。
+option.wait が指定されると指定された msec 待ってから retry します。
+
+retry しても callback が値を返さなければ次以降のチェーンは実行されません。
+
+  jstapDeferred.retry(10, function(){
+      // なにか値を return するまで 10 回繰り返す
+  }).
+  next(function(val){
+      // callback の retry した値が val に入ってる
+  });
+
+メッソッドチェーンの間でも使えます
+
+  jstapDeferred.next(function(){
+      return 'value';
+  }).
+  retry(10, function(count, val){
+      is(val, 'value');
+      // なにか値を return するまで 10 回繰り返す
+  }).
+  next(function(val){
+      // callback の retry した値が val に入ってる
+  });
+
+=head3 jstapDeferred.xhr( $options );
+
+$options の内容で XHR を実行して r.readyState == 4 になったら、 次のチェーンに進みます。
+
+    jstapDeferred.xhr({
+        method: 'GET',
+        uri: '/foo/var',
+        cache: false
+    }).
+    next(function(req){
+        is(req.readyState, 4);
+        like(req.responseText, new RegExp('.'));
+    });
+
+メッソッドチェーンの間でも使えます
+
+=head3 jstapDeferred.pop_request( $options );
+
+jstapDeferred 組み込みの pop_tap_request
+
+    jstapDeferred.pop_request({
+        retry: 100, // 100 回リトライ
+        wait: 100  // リトライは 100 msec おき
+    }).
+    next(function(req_list){
+        // pop_tap_request の callback に渡される引数が req_list に入る
+    });
+
+メッソッドチェーンの間でも使えます
+
+=head3 jstapDeferred.wait_dequeue()
+
+ok(), is(), like() などは非同期的に server に結果を送っているので、 server にこれらの結果を送り終わるまで wait してくれる為の物です。
+
+  jstapDeferred.next(function(){
+      ok(1);
+  }).
+  wait_dequeue().
+  next(function(){
+      // 上の ok(1) は、すでにサーバで処理された後
+  });
+
+=head2 jQuery plugin
+
+JSTAPd では、 ok, is 等を jQuery から便利に使える為の jQuery plugin を標準で提供しています
+
+利用する為には
+
+  sub include_ex {
+      (
+          ...,
+          \'jquery-jstapd.js',
+      )
+  }
+
+等として、リファレンス渡しで include を指定してください。
+
+=head3 $('').is_visible(num)
+
+指定したセレクタに適合する要素のうち表示可能に要素が num 個あればテストが成功します。
+
+=head3 $('').isnt_visible()
+
+指定したセレクタに適合する要素のうち表示可能な要素が一つもなければテストが成功します。
+
+=head3 $('').is_text(val)
+
+指定したセレクタの text() の内容が val と一致すれば OK
+
+=head3 $('').isnt_text(val)
+
+指定したセレクタの text() の内容が val と一致しなければ OK
+
+=head3 $('').like_text(new RegExp())
+
+指定したセレクタの text() の内容が正規表現と一致すれば OK
+
+=head3 $('').unlike_text(new RegExp())
+
+指定したセレクタの text() の内容が正規表現と一致しなければ OK
+
+=head3 $('').is_formval(val)
+
+指定したセレクタの val() の内容が val と一致すれば OK
+
+=head3 $('').isnt_formval(val)
+
+指定したセレクタの val() の内容が val と一致しなければ OK
+
+=head3 $('').like_formval(new RegExp())
+
+指定したセレクタの val() の内容が正規表現と一致すれば OK
+
+=head3 $('').unlike_formval(new RegExp())
+
+指定したセレクタの val() の内容が正規表現と一致しなければ OK
+
+=head1 SEE ALSO
+
+デモ用の動画も一緒にどうぞ。
+L<http://www.screencast.com/t/wDPLe10aU>

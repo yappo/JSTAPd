@@ -55,6 +55,20 @@ sub show_tap {
     exit;
 }
 
+sub _load_split_files {
+    my($class, $method, $ext) = @_;
+    return if $class->can($method);
+
+    my $file = $0;
+    $file =~ s/\.t$/.$ext/;
+    return unless -f $file;
+    no strict 'refs';
+    *{"$class\::$method"} = sub {
+        open my $fh, '<', $file or die "$file: $!";
+        local $/;
+        <$fh>;
+    };
+}
 
 sub export {
     my $class = shift;
@@ -64,8 +78,13 @@ sub export {
         *{"$class\::new"} = \&new;
     };
 
+    _load_split_files $class, 'client_script' => 'js';
+    _load_split_files $class, 'html_body'     => 'html';
+
+    die "missing client_script method in $0" unless $class->can('client_script');
+
     # set default method
-    for my $method (qw/ client_script html_body server_api /) {
+    for my $method (qw/ html_body server_api /) {
         next if $class->can($method);
         no strict 'refs';
         *{"$class\::$method"} = sub { '' };

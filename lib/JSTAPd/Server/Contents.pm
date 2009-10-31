@@ -193,6 +193,14 @@ $.fn.unlike_formval = function(val){
     window.unlike($(this).val(), val, $(this).selector + " form val() unlike '" + val.toString() + "'");
 };
 
+$.fn.is_attr = function(name, val){
+    window.is($(this).attr(name), val, $(this).selector + " '" + name + "' attr is '" + val + "'");
+};
+
+$.fn.ok_hasClass = function(val){
+    window.ok($(this).hasClass(val), $(this).selector + " hasClass '" + val + "'");
+};
+
 })(jQuery);
 DONE
 }

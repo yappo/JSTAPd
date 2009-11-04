@@ -201,6 +201,10 @@ $.fn.ok_hasClass = function(val){
     window.ok($(this).hasClass(val), $(this).selector + " hasClass '" + val + "'");
 };
 
+$.fn.has_items_of = function(val){
+    window.is($(this).length, val, $(this).selector + " has items of " + val + "");
+};
+
 })(jQuery);
 DONE
 }

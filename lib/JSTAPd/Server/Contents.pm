@@ -213,6 +213,11 @@ $.fn.ok_hasClass = function(val){
     return this;
 };
 
+$.fn.ok_hasntClass = function(val){
+    window.ok(!$(this).hasClass(val), $(this).selector + " hasntClass '" + val + "'");
+    return this;
+};
+
 $.fn.has_items_of = function(val){
     window.is($(this).length, val, $(this).selector + " has items of " + val + "");
     return this;

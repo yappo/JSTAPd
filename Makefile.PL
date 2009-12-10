@@ -13,6 +13,8 @@ requires 'Data::UUID';
 requires 'Test::TCP';
 requires 'FindBin';
 
+install_script "scripts/jstapd";
+
 tests 't/*.t';
 author_tests 'xt';
 

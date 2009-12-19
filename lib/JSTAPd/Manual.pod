@@ -6,6 +6,10 @@ JSTAPd::Manual - JSTAPd Manuall
 
 =over 4
 
+=item L<JSTAPd::Manual::Intro|JSTAPd::Manaual::Intro>
+
+Introdcution to JSTAPd.
+
 =item L<JSTAPd::Manual::API|JSTAPd::Manaual::API>
 
 Contains JSTAPd API reference.

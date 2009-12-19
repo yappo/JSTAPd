@@ -1,0 +1,91 @@
+=head1 NAME
+
+JSTAPd::Manual::Test - HOW TO WRITE JSTAPd TESTS
+
+=head1 DESCRIPTION
+
+JSTAPd tests are unlike Test::More tests in that the .t files themselves don't execute the actual tests. They are more like a set of setup functions. JSTAPd will invoke the appropriate functions to run the JSTAPd tests. 
+
+Normally you will setup functions to specify some JS code (the actual tests), HTML code that goes with it, and other files that go with it.
+
+=head1 SETUP
+
+Your JSTAPd .t files should start with the following:
+
+  use JSTAPd::Suite;
+
+This will do the proper preparation to run JSTAP tests.
+
+=head1 FUNCTIONS YOU MAY PROVIDE
+
+You may provide any of the following functions. If they are not present, JSTAPd::Suite will Do The Right Thing and provide defaults for you.
+
+=head2 sub client_script { return $JS }
+
+Return the actual Javascript code that gets executed. You should return the actual string that gets executed -- but how you create it is up to you. You can load the Javascript from a file, generate it on the fly, whatever.
+
+=head2 sub html_body { return $HTML }
+
+Provide the HTML code that should be used. This value will be used to substitute $BODY in your C<index> file.
+
+=head2 sub server_api { }
+
+This function will be called when non-JSTAPd Ajax calls are made to JSTAPd server. You should provide the server-side logic through this function
+
+  sub server_api {
+      my($self, $global, $req, $method, $path) = @_;
+
+      return { ... }; # or return [ ... ] or return 'strings'
+  }
+
+The return value can be any Perl construct. If it's a reference, the return value will be JSON encoded. Otherwise it will be passed as-is.
+
+The C<server_api()> function takes the following parameters:
+
+=over 4
+
+=item $self
+
+C<$self> contains the test instance. The test instance will also receive any subrountines defined in your .t file. For example,
+
+  sub foo {
+    ...
+  }
+
+  sub server_api {
+    my ($self, $global, $req, $method, $path) = @_;
+
+    $sef->foo();
+  }
+
+
+=item $global
+
+C<$global> is hashref that's available during the test session, and can be used as a stash. 
+
+=item $req
+
+A L<HTTP::Engine::Request> instance
+
+=item $method
+
+Contains the request method
+
+=item $path
+
+Contains the request path
+
+=back
+
+=head2 include
+
+You can specify the URL(s) of Javascript libraries that I<YOU> wrote via this function. You may return a single scalar, or a list of urls
+
+The difference between include and include_ex is that (while it's currently unimplemented) Javascript files specified via include will be checked for syntax errors and such before loading.
+
+=head2 include_ex
+
+The same as C<include>, but will NOT be checked for correctness. Javascript libraries provided by JSTAPd or other parties (such as jQuery, et al) should be specified here.
+
+=cut
+

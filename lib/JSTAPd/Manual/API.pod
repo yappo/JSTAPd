@@ -176,7 +176,7 @@ JSTAPd provides a set of tools that integrates with jQuery for easier testing. T
     sub include_ex {
         return (
              # whatever URL that holds your jquery file
-            'http://yourdomain/jquery.min.js',
+            'http://blahblah/jquery.min.js',
 
             # "magic" that enables jQuery <-> JSTAPd integration
             \'jquery-jstapd.js',

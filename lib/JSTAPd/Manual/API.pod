@@ -1,0 +1,239 @@
+=head1 NAME
+
+JSTAPd::Manual::API - JSTAPd Javascript API Reference
+
+=head1 BASIC API
+
+The Basic API gives you the tools to run the Javascript tests. These functions are implemented on the C<window> object. Unless otherwise stated, the functions should be compatible with that of L<Test::More>
+
+=head2 tests($testnum);
+
+Declares the number of tests to be run. There is I<NO> done_testing(), as it is very hard to detect how other (possibly asynchronous) code interact and affect the ending of a test.
+
+=head2 ok($boolean, $test_name);
+
+=head2 is( $got, $expected, $test_name );
+
+=head2 isnt( $got, $expected, $test_name );
+
+=head2 like( $got, new RegExp('...'), $test_name );
+
+=head2 unlike( $got, new RegExp('...'), $test_name );
+
+These are all equivalent of the Test::More counterparts
+
+=head2 tap_dump();
+
+Dumps the results up to this point to the console
+
+=head2 pop_tap_request(function(reqest_list){});
+
+# XXX - Need clarification
+いままで Ajax API にリクエストした時のリクエストの情報を array にして callback function に引数として実行します。
+一度 pop したら二度と同じものは戻りません。
+
+=head2 tap_xhr();
+
+Returns a XmlHttpRequest object -- Useful if you are not using any sort of Javascript frameworks to do the equivalent
+
+=head2 tap$( $domid );
+
+Short-hand notation that does the equivalent of
+
+  return document.getElementById($domid);
+
+=head2 tap$tag( $tagname );
+
+Short-hand notation that does the equivalent of
+
+  return document.getElementsByTagName($tagname)[0];
+
+=head2 jstapDeferred
+
+JSTAPd は結構非同期してますが、これを直列的にテストを実行してくれるしくみです。
+
+cho45 作の jsDefrerred を参考にして作ってあります。
+
+JSTAPd の client_script で指定されたスクリプトの、この jstapDeferred の next の中で実行されています。
+
+=head2 jstapDeferred.next
+
+基本的な next の使い方で、どんどん次の next にチェインして実行します。
+
+  jstapDeferred.next(function(){
+      return 'value';
+  }).
+  next(function(val){
+      is(val, 'value');
+  });
+
+next の戻り値に jstapDeferred のインスタンスを指定すると、次の next の直前に割り込む事ができます。
+
+  jstapDeferred.next(function(){
+      // 1
+      return jstapDeferred.next(function(){
+          // 2
+      }).
+      next(function(){
+          // 3
+      });
+  }).
+  next(function(val){
+      // 4
+  });
+
+
+=head2 jstapDeferred.wait( $time );
+
+指定した msec 待ってから次の next を呼び出します。
+
+  jstapDeferred.wait(1000).
+  next(function(val){
+      // 1秒後に実行
+  });
+
+メッソッドチェーンの間でも使えます
+
+  jstapDeferred.next(function(){}).
+  wait(1000).
+  next(function(val){
+      // 1秒後に実行
+  });
+
+=head2 jstapDeferred.retry( $retrycount, function(val){}, $option );
+
+callback が値を返すまで $retrycount の回数だけ callback を呼び続けます。
+option.wait が指定されると指定された msec 待ってから retry します。
+
+retry しても callback が値を返さなければ次以降のチェーンは実行されません。
+
+  jstapDeferred.retry(10, function(){
+      // なにか値を return するまで 10 回繰り返す
+  }).
+  next(function(val){
+      // callback の retry した値が val に入ってる
+  });
+
+メッソッドチェーンの間でも使えます
+
+  jstapDeferred.next(function(){
+      return 'value';
+  }).
+  retry(10, function(count, val){
+      is(val, 'value');
+      // なにか値を return するまで 10 回繰り返す
+  }).
+  next(function(val){
+      // callback の retry した値が val に入ってる
+  });
+
+=head2 jstapDeferred.xhr( $options );
+
+$options の内容で XHR を実行して r.readyState == 4 になったら、 次のチェーンに進みます。
+
+    jstapDeferred.xhr({
+        method: 'GET',
+        uri: '/foo/var',
+        cache: false
+    }).
+    next(function(req){
+        is(req.readyState, 4);
+        like(req.responseText, new RegExp('.'));
+    });
+
+メッソッドチェーンの間でも使えます
+
+=head2 jstapDeferred.pop_request( $options );
+
+jstapDeferred 組み込みの pop_tap_request
+
+    jstapDeferred.pop_request({
+        retry: 100, // 100 回リトライ
+        wait: 100  // リトライは 100 msec おき
+    }).
+    next(function(req_list){
+        // pop_tap_request の callback に渡される引数が req_list に入る
+    });
+
+メッソッドチェーンの間でも使えます
+
+=head2 jstapDeferred.wait_dequeue()
+
+ok(), is(), like() などは非同期的に server に結果を送っているので、 server にこれらの結果を送り終わるまで wait してくれる為の物です。
+
+  jstapDeferred.next(function(){
+      ok(1);
+  }).
+  wait_dequeue().
+  next(function(){
+      // 上の ok(1) は、すでにサーバで処理された後
+  });
+
+=head1 JQUERY PLUGIN
+
+JSTAPd provides a set of tools that integrates with jQuery for easier testing. These are not enabled by default, so you must specify that you want it in your tests:
+
+    use JSTAPd::Suite;
+
+    sub include_ex {
+        return (
+             # whatever URL that holds your jquery file
+            'http://yourdomain/jquery.min.js',
+
+            # "magic" that enables jQuery <-> JSTAPd integration
+            \'jquery-jstapd.js',
+        )
+    }
+
+    # XXX これってこんな感じにできないのかしら
+    sub include_ex {
+        return (
+            with_jquery($path_to_jquery)
+        )
+    }
+
+=head2 $(selector).is_visible(num)
+
+The test passes if the number of visible elements that match C<selector> matches C<num>
+
+=head2 $(selector).isnt_visible()
+
+The test passes if none of the elements that match C<selector> is visible.
+
+=head2 $(selector).is_text(val)
+
+The test passes if the C<text()> value of the element specified by C<selector> matches C<val>.
+
+# XXX what happens if selector returns multiple elements?
+
+=head2 $(selector).isnt_text(val)
+
+The test passes if the C<text()> value of the element specified by C<selector> does NOT match C<val>.
+
+=head2 $(selector).like_text(regexp)
+
+The test passes if the C<text()> value of the element specified by C<selector> matches C<regexp>. C<regexp> must be a C<RegExp> object.
+
+=head2 $(selector).unlike_text(regexp)
+
+The test passes if the C<text()> value of the element specified by C<selector> does NOT match C<regexp>. C<regexp> must be a C<RegExp> object.
+
+=head2 $(selector).is_formval(val)
+
+The test passes if the form component's value of the element specified by C<selector> matches C<val>.
+
+# XXX Probably it would be better if there's an example
+
+=head2 $(selector).isnt_formval(val)
+
+The test passes if the form component's value of the element specified by C<selector> does NOT match C<val>.
+
+=head2 $(selector).like_formval(regexp)
+
+The test passes if the form component's value of the element specified by C<selector> matches C<regex>. C<regexp> must be a C<RegExp> object
+
+=head2 $(selector).unlike_formval(regexp))
+
+The test passes if the form component's value of the element specified by C<selector> does NOT match C<regex>. C<regexp> must be a C<RegExp> object
+
+=cut

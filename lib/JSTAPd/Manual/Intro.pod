@@ -1,0 +1,132 @@
+=head1 NAME
+
+JSTAPd::Tutorial::Intro - Introduction To JSTAPd
+
+=head1 WHAT IS JSTAPd?
+
+JSTAPd is a testing framework to test Ajax/Javascript libraries. Test results are generated as TAP test results, so you can use tools like C<prove> to integrate it in your daily testing routines.
+
+=head1 PREPARATION
+
+=head2 INSTALL JSTAPd
+
+  $ cpan JSTAPd
+
+  # or from github
+  $ git clone git://github.com/Yappo/JSTAPd.git
+
+=head2 CREATE A SKELETON
+
+  $ ./scripts/jstapd -n foo
+  create foo
+  create foo/index
+  create foo/conf.pl
+  create foo/01_base.t
+
+=head2 STARTUP THE DAEMON
+
+  $ ./scripts/jstapd -d foo
+  starting: http://127.0.0.1:1978/____jstapd/ at lib/JSTAPd/Server.pm line 98, <DATA> line 16.
+  HTTP::Engine::Interface::ServerSimple : You can connect to your server at http://127.0.0.1:1978/
+
+Now you can access http://127.0.0.1:1978/____jstapd/
+
+=head2 RUN THE TEST (VIA A WEB BROWSER)
+
+Access the server with your web browser, and cliek on the C<make test> button. You should see the test running, and eventually an output like below will appear
+
+  01_base.t .. ok
+
+When you have multiple test files, you can also access http://127.0.0.1:1978/____jstapd/contents/01_base.t directly and run individual tests.
+
+=head2 RUN THE TEST (VIA COMMAND LINE)
+
+JSTAPd can be invoked via a command line tool like C<prove>. This is controlled via the C<JSTAP_AUTO_OPEN_COMMAND> environment variable, or the config.pl file that comes with your test.
+
+Once configured, you can invoke the test directly like so:
+
+  $ perl foo/01_base.t
+
+or by using prove:
+
+  $ prove -v foo/01_base.t
+
+As a sample, here are a few ways to set up your tests to use a particular browser when JSTAPd tests are run
+
+=over 4
+
+=item Safari ON Mac OS X
+
+  $ export JSTAP_AUTO_OPEN_COMMAND='open -a Safari %s'
+  $ prove -v foo/01_base.t
+
+=back
+
+The %s in the above command specification will receive the test URL, so you should be able to use it to configure for your particular needs.
+
+However, there's just one caveat: with B<FireFox>, you will not be able to close the browser window automatically, as FireFox does not allow arbitrary Javascript code to invoke C<window.close()> to close the browser window. This is a feature.
+
+=head1 JSTAPd TEST COMPONENTS
+
+=head2 REQUIRED FILES
+
+JSTAPd tests must be inside a directory that contains a file called C<index> and a configuration file called C<conf.pl>. These should be automatically created for you by using C<jstap> command.
+
+=head3 index
+
+This is a simple template file that gets called when rendering the test HTML code. If you have run a test file 
+
+  foo/bar/01.t
+
+then the C<index> file contained in the I<closest> directory is used. For example, in this case C<foo/bar/index> is tried first, and the C<foo/index>.
+
+These files contain are a few macros that will get expanded:
+
+=over 4
+
+=item $HEAD
+
+$HEAD gets replaced by JSTAPd's own Javascript code, and other C<script> tags that are automatically inserted.
+
+=item $BODY
+
+$BODY is replaced by code snippets that were defined in the .t files. If your tests require certain DOM structure, include them here.
+
+=back
+
+=head3 conf.pl
+
+C<conf.pl> contains global options for JSTAPd tests. When tests are run via C<prove>, the directory containing this file is taken as C<prove>'s root directory, so be sure to place it at the right place.
+
+C<conf.pl> is specified using a simple Perl hash. In this file, simply create a hash, and return a reference to it. JSTAPd will accept the following configuration parameters:
+
+=over 4
+
+=item jstapd_prefix
+
+Specifies the "root" mount point for the test server. The default value is C<____jstapd>
+
+=item apiurl
+
+Specifies which URLs should be mapped to the API urls declared in C<server_api()>
+Normally you shouldn't need to change this value.
+
+=item urlmap
+
+Contains a URL to filesystem mapping. 
+
+If your Javascript files that are supposed to be in /js/* are actually located under /var/www/htdocs/js/, specify it like so:
+
+  $config->{urlmap} = [
+      +{
+          qr!^/js/! => '/var/www/htdocs/js/',
+      },
+  ];
+
+=back
+
+=head3 auto_open_command
+
+Specifies the command to use when running tests. See the section L<RUN THE TEST (VIA COMMAND LINE)> for more details
+
+=cut

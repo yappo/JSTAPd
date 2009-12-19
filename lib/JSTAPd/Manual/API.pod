@@ -26,11 +26,9 @@ These are all equivalent of the Test::More counterparts
 
 Dumps the results up to this point to the console
 
-=head2 pop_tap_request(function(reqest_list){});
+=head2 pop_tap_request(function(request_list){});
 
-# XXX - Need clarification
-いままで Ajax API にリクエストした時のリクエストの情報を array にして callback function に引数として実行します。
-一度 pop したら二度と同じものは戻りません。
+The JSTAPd server keeps track of the Ajax requests (other than those that has to do with TAP results), and you can access them via this function. Once you called it, the server will empty the current list, so you won't be able to get the same request information again.
 
 =head2 tap_xhr();
 
@@ -196,44 +194,60 @@ JSTAPd provides a set of tools that integrates with jQuery for easier testing. T
 
 The test passes if the number of visible elements that match C<selector> matches C<num>
 
+If the selector returns multiple elements, then only the first one is used.
+
 =head2 $(selector).isnt_visible()
 
 The test passes if none of the elements that match C<selector> is visible.
 
+If the selector returns multiple elements, then only the first one is used.
+
 =head2 $(selector).is_text(val)
 
-The test passes if the C<text()> value of the element specified by C<selector> matches C<val>.
+The test passes if the C<text()> value of the element specified by C<selector> matches C<val>. 
 
-# XXX what happens if selector returns multiple elements?
+If the selector returns multiple elements, then only the first one is used.
 
 =head2 $(selector).isnt_text(val)
 
 The test passes if the C<text()> value of the element specified by C<selector> does NOT match C<val>.
 
+If the selector returns multiple elements, then only the first one is used.
+
 =head2 $(selector).like_text(regexp)
 
 The test passes if the C<text()> value of the element specified by C<selector> matches C<regexp>. C<regexp> must be a C<RegExp> object.
+
+If the selector returns multiple elements, then only the first one is used.
 
 =head2 $(selector).unlike_text(regexp)
 
 The test passes if the C<text()> value of the element specified by C<selector> does NOT match C<regexp>. C<regexp> must be a C<RegExp> object.
 
+If the selector returns multiple elements, then only the first one is used.
+
 =head2 $(selector).is_formval(val)
 
 The test passes if the form component's value of the element specified by C<selector> matches C<val>.
 
-# XXX Probably it would be better if there's an example
+If the selector returns multiple elements, then only the first one is used.
 
 =head2 $(selector).isnt_formval(val)
 
 The test passes if the form component's value of the element specified by C<selector> does NOT match C<val>.
 
+If the selector returns multiple elements, then only the first one is used.
+
 =head2 $(selector).like_formval(regexp)
 
 The test passes if the form component's value of the element specified by C<selector> matches C<regex>. C<regexp> must be a C<RegExp> object
 
+If the selector returns multiple elements, then only the first one is used.
+
 =head2 $(selector).unlike_formval(regexp))
 
 The test passes if the form component's value of the element specified by C<selector> does NOT match C<regex>. C<regexp> must be a C<RegExp> object
+
+If the selector returns multiple elements, then only the first one is used.
 
 =cut

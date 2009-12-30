@@ -12,6 +12,7 @@ requires 'Time::HiRes';
 requires 'Data::UUID';
 requires 'Test::TCP';
 requires 'FindBin';
+requires 'Getopt::Long';
 
 install_script "scripts/jstapd";
 

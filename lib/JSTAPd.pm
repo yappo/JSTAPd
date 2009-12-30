@@ -10,28 +10,35 @@ __END__
 
 =head1 NAME
 
-JSTAPd -
-
-=head1 SYNOPSIS
-
-  use JSTAPd;
+JSTAPd - testing framework to test Ajax/Javascript libraries
 
 =head1 DESCRIPTION
 
-JSTAPd is
+JSTAPd is a testing framework to test Ajax/Javascript libraries. Test results are generated as TAP test results, so you can use tools like C<prove> to integrate it in your daily testing routines.
+
+=head1 DOCUMENTATIONS
+
+=head2 Introduction
+
+L<JSTAPd::Tutorial::Intro>,
+
+=head2 how to write tests
+
+L<JSTAPd::Tutorial::Test>,
+
+=head2 Javascript API Reference
+
+L<JSTAPd::Tutorial::Test>,
+
+=head2 For Japanese
+
+L<JSTAPd::Tutorial::JA>,
 
 =head1 AUTHOR
 
 Kazuhiro Osawa E<lt>yappo <at> shibuya <döt> plE<gt>
 
-=head1 SEE ALSO
-
-=head1 REPOSITORY
-
-  svn co http://svn.coderepos.org/share/lang/perl/JSTAPd/trunk JSTAPd
-
-JSTAPd is Subversion repository is hosted at L<http://coderepos.org/share/>.
-patches and collaborators are welcome.
+lestrrat
 
 =head1 LICENSE
 

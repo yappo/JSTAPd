@@ -18,4 +18,5 @@
 ^[^/]+\.pl$
 ^\.shipit$
 ^\.git/
+.gitignore
 \.sw[po]$

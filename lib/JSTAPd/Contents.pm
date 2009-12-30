@@ -39,7 +39,7 @@ JSTAPd::Suite::export(__PACKAGE__);
 1;";
     do {
         local $FindBin::Bin = $self->{path}->dir;
-        eval $code;
+        eval $code; ## no critic
     };
     $@ and die $@;
     $self->{suite} = $package->new;

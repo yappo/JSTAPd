@@ -17,7 +17,7 @@ sub handler {
         $method = join '/', @chain, $method;
     } else {
         no strict 'refs';
-        eval 'require $klass' unless %{"$klass\::"};
+        eval 'require $klass' unless %{"$klass\::"}; ## no critic
     }
     unless (!$@ && ($klass->can($method) || $klass->can('AUTOLOAD'))) {
         return HTTP::Engine::Response->new( status => 404, body => 'Not Found' );

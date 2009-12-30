@@ -33,7 +33,7 @@ Now you can access http://127.0.0.1:1978/____jstapd/
 
 =head2 RUN THE TEST (VIA A WEB BROWSER)
 
-Access the server with your web browser, and cliek on the C<make test> button. You should see the test running, and eventually an output like below will appear
+Access the server with your web browser, and click on the C<make test> button. You should see the test running, and eventually an output like below will appear
 
   01_base.t .. ok
 
@@ -64,7 +64,7 @@ As a sample, here are a few ways to set up your tests to use a particular browse
 
 The %s in the above command specification will receive the test URL, so you should be able to use it to configure for your particular needs.
 
-However, there's just one caveat: with B<FireFox>, you will not be able to close the browser window automatically, as FireFox does not allow arbitrary Javascript code to invoke C<window.close()> to close the browser window. This is a feature.
+However, there's just one caveat: with B<Firefox>, you will not be able to close the browser window automatically, as Firefox does not allow arbitrary JavaScript code to invoke C<window.close()> to close the browser window. This is a feature.
 
 =head1 JSTAPd TEST COMPONENTS
 
@@ -86,7 +86,7 @@ These files contain are a few macros that will get expanded:
 
 =item $HEAD
 
-$HEAD gets replaced by JSTAPd's own Javascript code, and other C<script> tags that are automatically inserted.
+$HEAD gets replaced by JSTAPd's own JavaScript code, and other C<script> tags that are automatically inserted.
 
 =item $BODY
 
@@ -115,7 +115,7 @@ Normally you shouldn't need to change this value.
 
 Contains a URL to filesystem mapping. 
 
-If your Javascript files that are supposed to be in /js/* are actually located under /var/www/htdocs/js/, specify it like so:
+If your JavaScript files that are supposed to be in /js/* are actually located under /var/www/htdocs/js/, specify it like so:
 
   $config->{urlmap} = [
       +{

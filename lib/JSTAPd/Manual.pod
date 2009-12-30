@@ -1,6 +1,6 @@
 =head1 NAME
 
-JSTAPd::Manual - JSTAPd Manuall
+JSTAPd::Manual - JSTAPd Manual
 
 =head1 TABLE OF CONTENTS
 
@@ -8,7 +8,7 @@ JSTAPd::Manual - JSTAPd Manuall
 
 =item L<JSTAPd::Manual::Intro|JSTAPd::Manaual::Intro>
 
-Introdcution to JSTAPd.
+Introduction to JSTAPd.
 
 =item L<JSTAPd::Manual::API|JSTAPd::Manaual::API>
 

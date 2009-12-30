@@ -14,7 +14,7 @@ Your JSTAPd .t files should start with the following:
 
   use JSTAPd::Suite;
 
-This will do the proper preparation to run JSTAP tests.
+This will do the proper preparation to run JSTAPd tests.
 
 =head1 FUNCTIONS YOU MAY PROVIDE
 
@@ -22,7 +22,7 @@ You may provide any of the following functions. If they are not present, JSTAPd:
 
 =head2 sub client_script { return $JS }
 
-Return the actual Javascript code that gets executed. You should return the actual string that gets executed -- but how you create it is up to you. You can load the Javascript from a file, generate it on the fly, whatever.
+Return the actual JavaScript code that gets executed. You should return the actual string that gets executed -- but how you create it is up to you. You can load the JavaScript from a file, generate it on the fly, whatever.
 
 =head2 sub html_body { return $HTML }
 
@@ -46,7 +46,7 @@ The C<server_api()> function takes the following parameters:
 
 =item $self
 
-C<$self> contains the test instance. The test instance will also receive any subrountines defined in your .t file. For example,
+C<$self> contains the test instance. The test instance will also receive any subroutines defined in your .t file. For example,
 
   sub foo {
     ...
@@ -79,13 +79,13 @@ Contains the request path
 
 =head2 include
 
-You can specify the URL(s) of Javascript libraries that I<YOU> wrote via this function. You may return a single scalar, or a list of urls
+You can specify the URL(s) of JavaScript libraries that I<YOU> wrote via this function. You may return a single scalar, or a list of urls
 
-The difference between include and include_ex is that (while it's currently unimplemented) Javascript files specified via include will be checked for syntax errors and such before loading.
+The difference between include and include_ex is that (while it's currently unimplemented) JavaScript files specified via include will be checked for syntax errors and such before loading.
 
 =head2 include_ex
 
-The same as C<include>, but will NOT be checked for correctness. Javascript libraries provided by JSTAPd or other parties (such as jQuery, et al) should be specified here.
+The same as C<include>, but will NOT be checked for correctness. JavaScript libraries provided by JSTAPd or other parties (such as jQuery, et al) should be specified here.
 
 =cut
 

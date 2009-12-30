@@ -275,7 +275,7 @@ XHR オブジェクトを返します。生 Ajax したい人むけ。
 
 JSTAPd は結構非同期してますが、これを直列的にテストを実行してくれるしくみです。
 
-cho45 作の jsDefrerred を参考にして作ってあります。
+cho45 作の jsDeferred を参考にして作ってあります。
 
 JSTAPd の client_script で指定されたスクリプトの、この jstapDeferred の next の中で実行されています。
 

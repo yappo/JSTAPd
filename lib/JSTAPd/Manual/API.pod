@@ -1,10 +1,10 @@
 =head1 NAME
 
-JSTAPd::Manual::API - JSTAPd Javascript API Reference
+JSTAPd::Manual::API - JSTAPd JavaScript API Reference
 
 =head1 BASIC API
 
-The Basic API gives you the tools to run the Javascript tests. These functions are implemented on the C<window> object. Unless otherwise stated, the functions should be compatible with that of L<Test::More>
+The Basic API gives you the tools to run the JavaScript tests. These functions are implemented on the C<window> object. Unless otherwise stated, the functions should be compatible with that of L<Test::More>
 
 =head2 tests($testnum);
 
@@ -32,7 +32,7 @@ The JSTAPd server keeps track of the Ajax requests (other than those that has to
 
 =head2 tap_xhr();
 
-Returns a XmlHttpRequest object -- Useful if you are not using any sort of Javascript frameworks to do the equivalent
+Returns a XmlHttpRequest object -- Useful if you are not using any sort of JavaScript frameworks to do the equivalent
 
 =head2 tap$( $domid );
 
@@ -50,7 +50,7 @@ Short-hand notation that does the equivalent of
 
 JSTAPd は結構非同期してますが、これを直列的にテストを実行してくれるしくみです。
 
-cho45 作の jsDefrerred を参考にして作ってあります。
+cho45 作の jsDeferred を参考にして作ってあります。
 
 JSTAPd の client_script で指定されたスクリプトの、この jstapDeferred の next の中で実行されています。
 
@@ -167,7 +167,7 @@ ok(), is(), like() などは非同期的に server に結果を送っている�
       // 上の ok(1) は、すでにサーバで処理された後
   });
 
-=head1 JQUERY PLUGIN
+=head1 jQuery PLUGIN
 
 JSTAPd provides a set of tools that integrates with jQuery for easier testing. These are not enabled by default, so you must specify that you want it in your tests:
 

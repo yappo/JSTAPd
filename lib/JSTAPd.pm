@@ -26,7 +26,7 @@ L<JSTAPd::Tutorial::Intro>,
 
 L<JSTAPd::Tutorial::Test>,
 
-=head2 Javascript API Reference
+=head2 JavaScript API Reference
 
 L<JSTAPd::Tutorial::Test>,
 

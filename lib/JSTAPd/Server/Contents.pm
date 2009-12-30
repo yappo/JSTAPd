@@ -223,6 +223,7 @@ $.fn.has_items_of = function(val){
     return this;
 };
 
+/*
 // for jquery ui *experimental*
 $.fh.pseudo_drop = function(drag, e){
     if (!e) e = {};
@@ -230,6 +231,7 @@ $.fh.pseudo_drop = function(drag, e){
     var droppable = $(this).data('droppable');
     droppable._drop(e, draggable);
 };
+*/
 
 })(jQuery);
 DONE

@@ -175,7 +175,7 @@ sub handler {
 
         # push request
         my $param = $req->params;
-        push @{ $self->{ajax_request_stack} }, +{
+        push @{ $self->get_path($session, $current_path)->{ajax_request_stack} }, +{
             method => $req->method,
             path   => $req->uri->path,
             query  => $req->uri->query,
@@ -244,7 +244,8 @@ sub api_handler {
             });
         }
     } elsif ($type eq 'pop_tap_request') {
-        my $stack = $self->{ajax_request_stack} || +[];
+        my $current = $self->get_path($session, $current_path);
+        my $stack = $current->{ajax_request_stack} || +[];
         if (my $requests = $req->param('requests')) {
             if (scalar(@{ $stack }) >= $requests) {
                 $stack = [ splice @{ $stack }, 0, $requests ];
@@ -252,7 +253,7 @@ sub api_handler {
                 $stack = +[];
             }
         } else {
-            $self->{ajax_request_stack} = +[];
+            $current->{ajax_request_stack} = +[];
         }
         return $self->json_response($stack);
 

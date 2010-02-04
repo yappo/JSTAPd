@@ -154,6 +154,10 @@ sub handler {
         };
         $res = JSTAPd::Server::Contents->handler($path, $self, $req, $session);
 
+        # no-cache
+        $res->header( 'Pragma' => 'no-cache' );
+        $res->header( 'Cache-Control' => 'no-cache' );
+
         # set test session cookie
         if ($path eq 'index' || $path =~ /\.t$/) {
             $res->cookies->{$jstapd_prefix} = { value => $session } if $res;

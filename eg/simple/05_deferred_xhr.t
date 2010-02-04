@@ -48,17 +48,22 @@ next(function(req){
 
 }).
 next(function(){
+    var i = (new Date)*1;
+
     var r = tap_xhr();
-    r.open("GET", "/test");
+    r.open("GET", "/test?"+i++);
+    r.onreadystatechange = function() {};
     r.send(null);
 
     r = tap_xhr();
-    r.open("GET", "/test");
+    r.open("GET", "/test?"+i++);
+    r.onreadystatechange = function() {};
     r.send(null);
 
 
     r = tap_xhr();
-    r.open("GET", "/test");
+    r.open("GET", "/test?"+i++);
+    r.onreadystatechange = function() {};
     r.send(null);
 }).
 pop_request({ retry: 50, wait: 100, requests: 2 }).

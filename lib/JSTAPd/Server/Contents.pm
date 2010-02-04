@@ -223,16 +223,6 @@ $.fn.has_items_of = function(val){
     return this;
 };
 
-/*
-// for jquery ui *experimental*
-$.fh.pseudo_drop = function(drag, e){
-    if (!e) e = {};
-    var draggable = $(drag).data('draggable');
-    var droppable = $(this).data('droppable');
-    droppable._drop(e, draggable);
-};
-*/
-
 })(jQuery);
 DONE
 }

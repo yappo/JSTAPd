@@ -2,7 +2,7 @@ use JSTAPd::Suite;
 
 sub client_script {
     return <<'DONE';
-tests(9);
+tests(14);
 var c = 0;
 
 jstapDeferred.next(function(){
@@ -46,7 +46,33 @@ next(function(req){
     is(req[0].path, '/xhr', 'pop_request 1 path');
 });
 
+}).
+next(function(){
+    var r = tap_xhr();
+    r.open("GET", "/test");
+    r.send(null);
+
+    r = tap_xhr();
+    r.open("GET", "/test");
+    r.send(null);
+
+
+    r = tap_xhr();
+    r.open("GET", "/test");
+    r.send(null);
+}).
+pop_request({ retry: 50, wait: 10, requests: 2 }).
+next(function(req){
+    is(req.length, 2, 'pop_request 2 requests 5');
+    is(req[0].path, '/test', 'pop_request 1 path');
+    is(req[1].path, '/test', 'pop_request 2 path');
+}).
+pop_request({ retry: 50, wait: 10, requests: 1 }).
+next(function(req){
+    is(req.length, 1, 'pop_request 1 requests 6');
+    is(req[0].path, '/test', 'pop_request 1 path');
 });
+;
 DONE
 }
 
@@ -57,5 +83,7 @@ sub server_api {
     if ($path eq '/xhr' && $method eq 'GET') {
         $global->{i}++;
         return "response body " . $global->{i};
+    } elsif ($path =~ m!^/test!) {
+        return $path;
     }
 }

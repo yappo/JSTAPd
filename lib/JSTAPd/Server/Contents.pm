@@ -44,7 +44,7 @@ sub _gen_li {
     sprintf '<li><a href="%s">%s</a></li>', $path, $path;
 }
 sub _index {
-    my($class, $server, $req, $session, $chain) = @_;
+    my($class, $server, $req, $session, $args, $chain) = @_;
 
     my @li = _gen_li('../');
     $server->contents->each( $chain => sub {

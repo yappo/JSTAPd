@@ -269,7 +269,15 @@ sub api_handler {
 }
 
 sub json_response {
-    HTTP::Engine::Response->new( body => JSON::XS->new->ascii->encode($_[1]) );
+    my $res;
+    eval {
+        $res = HTTP::Engine::Response->new( body => JSON::XS->new->ascii->encode($_[1]) );
+    };
+    if ($@) {
+        warn Dumper($_[1]);
+        warn $@;
+    }
+    $res;
 }
 
 1;

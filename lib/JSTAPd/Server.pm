@@ -154,6 +154,10 @@ sub handler {
         };
         $res = JSTAPd::Server::Contents->handler($path, $self, $req, $session);
 
+        # set test session cookie
+        if ($path eq 'index' || $path =~ /\.t$/) {
+            $res->cookies->{$jstapd_prefix} = { value => $session } if $res;
+        }
     } elsif (($path) = $req->uri->path =~ m!^/${jstapd_prefix}__api/(.+)?$!) {
         # ajax request for jstapd
         $res = $self->api_handler($path, $req, $session);
@@ -179,7 +183,7 @@ sub handler {
         my $path = $self->decode_urlmap($req->uri->path);
         $res = HTTP::Engine::Response->new( status => 200, body => $self->{dir}->file($path)->slurp.'' );
     }
-    $res->cookies->{$jstapd_prefix} = { value => $session } if $res;
+
     return $res || HTTP::Engine::Response->new( status => 404, body => 'Not Found' );
 }
 

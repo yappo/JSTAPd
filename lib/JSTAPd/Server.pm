@@ -238,7 +238,7 @@ sub api_handler {
     } elsif ($type eq 'pop_tap_request') {
         my $stack = $self->{ajax_request_stack};
         $self->{ajax_request_stack} = +[];
-        return $self->json_response($stack);
+        return $self->json_response($stack || []);
 
     } elsif ($type eq 'exit') {
         return unless $self->run_once && ref($self->{destroy}) eq 'CODE';

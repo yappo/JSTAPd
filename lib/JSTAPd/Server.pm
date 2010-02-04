@@ -160,7 +160,7 @@ sub handler {
 
         # set test session cookie
         if ($path eq 'index' || $path =~ /\.t$/) {
-            $res->cookies->{$jstapd_prefix} = { value => $session } if $res;
+            $res->cookies->{$jstapd_prefix} = { value => $session };
         }
     } elsif (($path) = $req->uri->path =~ m!^/${jstapd_prefix}__api/(.+)?$!) {
         # ajax request for jstapd

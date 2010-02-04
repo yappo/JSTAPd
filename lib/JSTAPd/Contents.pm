@@ -326,7 +326,7 @@ function start_next(args){
     var iframe = document.createElement("iframe");
     iframe_div.appendChild(iframe);
     iframe.src = contents_prefix + path + '?session=' + session + '&t=' + ((new Date()) * 1);
-    iframe.width = '100%%';
+    iframe.width = '100%';
 
     var watch; watch = function(){
         get('watch_finish', {}, function(r){

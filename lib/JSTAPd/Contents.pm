@@ -161,9 +161,9 @@ window.tap_dump = function(){
     });
 };
 
-window.pop_tap_request = function(cb){
+window.pop_tap_request = function(cb, opts){
     enqueue(function(){
-        get('pop_tap_request', {}, function(r){
+        get('pop_tap_request', (opts || {}), function(r){
             var json; eval('json = ' + r.responseText);
             cb(json);
         });
@@ -607,6 +607,8 @@ jstapDeferred.pop_request = function(o){
     if (!o) o = {};
     var retry = o.retry;
     var wait  = o.wait || 0;
+    var opts  = {};
+    if (o.requests) opts.requests = o.requests;
 
     var d = new jstapDeferred;
     var func = function(req){
@@ -624,11 +626,11 @@ jstapDeferred.pop_request = function(o){
                     // retry
                     setTimeout(f, wait);
                 }
-            });
+            }, opts);
         };
         setTimeout(f, 0);
     } else {
-        pop_tap_request(func);
+        pop_tap_request(func, opts);
     }
     return d;
 };

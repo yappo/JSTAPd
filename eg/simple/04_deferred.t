@@ -40,7 +40,7 @@ return jstapDeferred.wait(100).next(function(v){ // 1, 2
 wait(200).next(function(val,x){ // 4(7), 5 
     is(c++, 2, 'wait count 2');
     var el = (new Date).getTime() - t.getTime();
-    is((el < 210 && el > 190), true, 'wait elapsed 2');
+    is((el < 310 && el > 90), true, 'wait elapsed 2');
     is(val, 'next2', 'wait next 2');
     return 'next3';
 }).next(function(val){ // 6

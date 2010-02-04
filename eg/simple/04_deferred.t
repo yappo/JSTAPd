@@ -29,7 +29,7 @@ var t = new Date();
 return jstapDeferred.wait(100).next(function(v){ // 1, 2
     is(c++, 0, 'wait count 0');
     var el = (new Date).getTime() - t.getTime();
-    is((el < 110 && el > 90), true, 'wait elapsed');
+    is((el < 190 && el > 9), true, 'wait elapsed');
     return 'next1';
 }).next(function(val){ // 3
     is(c++, 1, 'wait count 1');

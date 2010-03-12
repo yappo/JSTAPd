@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use lib 'lib';
 use Getopt::Long;
+use Plack::Runner;
 use JSTAPd::Server;
 use Path::Class;
 
@@ -101,7 +102,10 @@ END
     exit;
 }
 
-JSTAPd::Server->new( dir => $dir, port => $port, host => $host )->run;
+my $runner = Plack::Runner->new();
+$runner->run( 
+    JSTAPd::Server->new( dir => $dir, port => $port, host => $host )->psgi_app
+);
 
 __END__
 

@@ -1,7 +1,7 @@
+package JSTAPd::Server::Contents;
 use strict;
 use warnings;
-package JSTAPd::Server::Contents;
-use HTTP::Engine::Response;
+use Plack::Response;
 use Data::UUID;
 
 sub handler {
@@ -20,7 +20,7 @@ sub handler {
         eval 'require $klass' unless %{"$klass\::"}; ## no critic
     }
     unless (!$@ && ($klass->can($method) || $klass->can('AUTOLOAD'))) {
-        return HTTP::Engine::Response->new( status => 404, body => 'Not Found' );
+        return Plack::Response->new(404, [ 'Content-Type' => 'text/plain' ], 'Not Found' );
     }
     warn "$klass -> $method : " . $req->uri unless $server->run_once;
     $klass->$method($server, $req, $session, $args);
@@ -29,11 +29,15 @@ sub handler {
 # index page
 sub index {
     my($class, $server, $req, $session) = @_;
-    HTTP::Engine::Response->new( body => JSTAPd::Contents->build_index(
-        jstapd_prefix => $server->jstapd_prefix,
-        run_once      => $server->run_once,
-        auto_open     => $server->auto_open,
-    ));
+    return Plack::Response->new(
+        200, 
+        [ 'Content-Type' => 'text/html' ],
+        JSTAPd::Contents->build_index(
+            jstapd_prefix => $server->jstapd_prefix,
+            run_once      => $server->run_once,
+            auto_open     => $server->auto_open,
+        )
+    );
 }
 
 package JSTAPd::Server::Contents::contents;
@@ -55,7 +59,7 @@ sub _index {
 
     my $index = $server->contents->fetch_file('index', $chain, 1);
     my $body = sprintf "<ul>\n%s</ul>\n", join("\n", @li);
-    HTTP::Engine::Response->new( body => $index->build_html( '', $body ) );
+    Plack::Response->new( 200, ['Content-Type' => 'text/html' ], $index->build_html( '', $body ) );
 }
 
 sub AUTOLOAD {
@@ -83,8 +87,10 @@ sub AUTOLOAD {
     } $content->suite->include_ex, $content->suite->include;
 
     my $index   = $server->contents->fetch_file('index', \@chain, 1);
-    return HTTP::Engine::Response->new(
-        body => $index->build_html(
+    return Plack::Response->new(
+        200,
+        [ 'Content-Type' => 'text/html' ],
+        $index->build_html(
             $content->header(
                 jstapd_prefix => $server->jstapd_prefix,
                 session       => $session,
@@ -121,12 +127,12 @@ sub __run_api {
     if ($err) {
         my $body = sprintf "error: %s\n\t%s\n", $args->{path}, $err;
         warn $body;
-        return HTTP::Engine::Response->new( status => 500, body => $body );
+        return Plack::Response->new(500, [ 'Content-Type' => 'text/plain' ], $body );
     }
     if (ref($ret)) {
-        return HTTP::Engine::Response->new( body => JSON::XS->new->ascii->encode($ret) );
+        return Plack::Response->new(200, [ 'Content-Type' => 'application/json' ], JSON::XS->new->ascii->encode($ret) );
     } else {
-        return HTTP::Engine::Response->new( body => $ret );
+        return Plack::Response->new(200, [ 'Content-Type' => 'text/plain' ], $ret );
     }
 }
 
@@ -141,8 +147,8 @@ sub AUTOLOAD {
 
     my $body;
     $body = $class->$path if $class->can($path);
-    return HTTP::Engine::Response->new( status => 404, body => 'Not Found' ) unless $body;
-    return HTTP::Engine::Response->new( body => $body );
+    return Plack::Response->new( 404, [ 'Content-Type' => 'text/plain' ], 'Not Found' ) unless $body;
+    return Plack::Response->new( 200, [ 'Content-Type' => 'text/plain' ], $body );
 }
 
 sub jquery_jstapd {

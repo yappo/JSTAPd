@@ -3,11 +3,12 @@ use strict;
 use warnings;
 use Data::Dumper;
 use JSON::XS;
-use HTTP::Engine;
 use HTTP::Request;
 use LWP::UserAgent;
 use Path::Class;
 use Time::HiRes;
+use Plack::Request;
+use Plack::Response;
 
 use JSTAPd::ContentsBag;
 use JSTAPd::Server::Contents;
@@ -99,6 +100,14 @@ sub run {
     $self->{engine}->run;
 }
 
+sub psgi_app {
+    my $self = shift;
+    return sub {
+        my $res = $self->handler(@_);
+        return $res->finalize();
+    };
+}
+
 sub setup_session_tap {
     my($self, $session, $path) = @_;
     $self->{session_tap}->{$session} ||= +{
@@ -136,7 +145,10 @@ sub decode_urlmap {
 }
 
 sub handler {
-    my($self, $req) = @_;
+    my($self, $env) = @_;
+
+    my $req = Plack::Request->new($env);
+
     my $session = $req->param('session') || Data::UUID->new->create_hex;
 
     my $jstapd_prefix = $self->{conf}->{jstapd_prefix};
@@ -165,16 +177,16 @@ sub handler {
     } elsif (($path) = $req->uri->path =~ m!^/${jstapd_prefix}__api/(.+)?$!) {
         # ajax request for jstapd
         $res = $self->api_handler($path, $req, $session);
-        $res ||= HTTP::Engine::Response->new( status => 200, body => '{msg:"ok"}' );
+        $res ||= Plack::Response->new( 200, [ 'Content-Type' => 'application/json' ], '{msg:"ok"}' );
 
     } elsif ($apiurl && $req->uri->path =~ /$apiurl/) {
         # ajax request for appication
-        $session = $req->cookie($jstapd_prefix)->value;
+        $session = $req->cookies->{$jstapd_prefix};
         my $current_path = $self->get_session($session)->{current_path};
         $res = JSTAPd::Server::Contents->handler("contents/$current_path", $self, $req, $session, { path => $current_path, is_api => 1 });
 
         # push request
-        my $param = $req->params;
+        my $param = $req->parameters;
         push @{ $self->get_path($session, $current_path)->{ajax_request_stack} }, +{
             method => $req->method,
             path   => $req->uri->path,
@@ -185,10 +197,11 @@ sub handler {
     } else {
         # ajax request?
         my $path = $self->decode_urlmap($req->uri->path);
-        $res = HTTP::Engine::Response->new( status => 200, body => $self->{dir}->file($path)->slurp.'' );
+        # XXX Content-Type?
+        $res = Plack::Response->new( 200, [], $self->{dir}->file($path)->slurp.'' );
     }
 
-    return $res || HTTP::Engine::Response->new( status => 404, body => 'Not Found' );
+    return $res || Plack::Response->new( 404, [ 'Content-Type' => 'text/plain' ], 'Not Found' );
 }
 
 sub api_handler {
@@ -272,13 +285,13 @@ sub api_handler {
     if ($type eq 'tests') {
         $tap->tests($req->param('num'));
     } elsif ($type eq 'tap') {
-        $tap->push_tap($req->params);
+        $tap->push_tap($req->parameters);
     } elsif ($type eq 'tap_done') {
         if (my $error = $req->param('error')) {
             $tap->error($error);
         }
         $self->get_path(@session_path)->{is_end} = 1;
-        return HTTP::Engine::Response->new( status => 200, body => $tap->as_string );
+        return Plack::Response->new( 200, [ 'Content-Type' => 'text/plain' ], $tap->as_string );
     } elsif ($type eq 'dump') {
         warn Dumper($tap);
     }
@@ -288,7 +301,7 @@ sub api_handler {
 sub json_response {
     my $res;
     eval {
-        $res = HTTP::Engine::Response->new( body => JSON::XS->new->ascii->encode($_[1]) );
+        $res = Plack::Response->new( 200, ['Content-Type' => 'application/json' ], JSON::XS->new->ascii->encode($_[1]) );
     };
     if ($@) {
         warn Dumper($_[1]);

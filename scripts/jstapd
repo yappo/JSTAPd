@@ -102,7 +102,12 @@ END
     exit;
 }
 
-my $runner = Plack::Runner->new();
+my $runner = Plack::Runner->new(
+    options => [
+        host => $host,
+        port => $port,
+    ],
+);
 $runner->run( 
     JSTAPd::Server->new( dir => $dir, port => $port, host => $host )->psgi_app
 );

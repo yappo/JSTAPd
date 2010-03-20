@@ -4,6 +4,7 @@ all_from 'lib/JSTAPd.pm';
 githubmeta;
 
 requires 'Plack';
+requires 'Twiggy';
 requires 'Data::Dumper';
 requires 'JSON::XS';
 requires 'HTTP::Request';

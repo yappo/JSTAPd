@@ -85,6 +85,7 @@ sub run {
     }
 
     my $runner = Plack::Runner->new(
+        server  => 'Twiggy',
         options => [
             host => $self->{host},
             port => $self->{port},

@@ -1,6 +1,7 @@
 package JSTAPd::Server;
 use strict;
 use warnings;
+use AE;
 use Data::Dumper;
 use JSON::XS;
 use HTTP::Request;
@@ -242,17 +243,35 @@ sub api_handler {
         });
     } elsif ($type eq 'watch_finish') {
         my @session_path = ($session, $current_path);
-        if ($current_path && $self->get_path(@session_path)->{is_end}) {
-            my $tap = $self->get_tap(@session_path);
-            return $self->json_response({
-                session => $session,
-                path    => $current_path,
-                tap     => $tap->as_hash,                
-            });
-        } else {
-            return $self->json_response({
-                status => 0,
-            });
+        my $current = $self->get_path(@session_path);
+        if ($current_path && $current) {
+            # 終了までまってるなり
+            if ($current->{is_end}) {
+                # もうおわってた
+                my $tap = $self->get_tap(@session_path);
+                return $self->json_response({
+                    session => $session,
+                    path    => $current_path,
+                    tap     => $tap->as_hash,
+                });
+            } elsif ($current->{end_cv}) {
+            } else {
+                $current->{end_cv} = AE::cv;
+                return sub {
+                    my $start_response = shift;
+                    $current->{end_cv}->cb(
+                        sub {
+                            shift->recv;
+                            my $tap = $self->get_tap(@session_path);
+                            $start_response->( $self->json_response({
+                                session => $session,
+                                path    => $current_path,
+                                tap     => $tap->as_hash,
+                            })->finalize );
+                        }
+                    );
+                }
+            }
         }
     } elsif ($type eq 'pop_tap_request') {
         my $current = $self->get_path($session, $current_path);
@@ -280,6 +299,7 @@ sub api_handler {
     my @session_path = ($session, $path);
 
     my $tap = $self->get_tap(@session_path);
+    my $current = $self->get_path(@session_path);
     if ($type eq 'tests') {
         $tap->tests($req->param('num'));
     } elsif ($type eq 'tap') {
@@ -287,6 +307,9 @@ sub api_handler {
     } elsif ($type eq 'tap_done') {
         if (my $error = $req->param('error')) {
             $tap->error($error);
+        }
+        if ($current->{end_cv}) {
+            $current->{end_cv}->send();
         }
         $self->get_path(@session_path)->{is_end} = 1;
         return Plack::Response->new( 200, [ 'Content-Type' => 'text/plain' ], $tap->as_string );

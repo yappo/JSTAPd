@@ -328,17 +328,14 @@ function start_next(args){
     iframe.src = contents_prefix + path + '?session=' + session;
     iframe.width = '100%%';
 
-    var watch; watch = function(){
-        get('watch_finish', {}, function(r){
-            var json; eval('json = ' + r.responseText);
-            if (json.status != 0 && json.session == session && json.path == path) {
-                finish_and_next(json.tap, json.path, h);
-            } else {
-                setTimeout(watch, 10);
-            }
-        });
-    };
-    setTimeout(watch, 10);
+    get('watch_finish', {}, function(r){
+        var json; eval('json = ' + r.responseText);
+        if (json.status != 0 && json.session == session && json.path == path) {
+            finish_and_next(json.tap, json.path, h);
+        } else {
+            setTimeout(watch, 10);
+        }
+    });
 }
 
 function finish_and_next(json, name, h){

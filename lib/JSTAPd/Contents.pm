@@ -333,7 +333,7 @@ function start_next(args){
         if (json.status != 0 && json.session == session && json.path == path) {
             finish_and_next(json.tap, json.path, h);
         } else {
-            setTimeout(watch, 10);
+            alert("error?");
         }
     });
 }

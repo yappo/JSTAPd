@@ -180,7 +180,7 @@ sub handler {
         $res = JSTAPd::Server::Contents->handler("contents/$current_path", $self, $req, $session, { path => $current_path, is_api => 1 });
 
         # push request
-        my $param = $req->parameters;
+        my $param = $req->parameters->as_hashref_mixed;
         push @{ $self->get_path($session, $current_path)->{ajax_request_stack} }, +{
             method => $req->method,
             path   => $req->uri->path,

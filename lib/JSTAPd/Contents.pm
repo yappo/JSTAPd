@@ -273,7 +273,7 @@ sub build_html {
     my $index = $self->slurp;
     $body = sprintf '<div id="jstap_users_body_container">%s</div>', $body;
     $index =~ s/\$HEAD/$head/g;
-    $index =~ s/\$BODY/$body/g;
+    $index =~ s{\$BODY}{$body<div id="jstap_tap_result_container"></div>}g;
     $index;
 }
 

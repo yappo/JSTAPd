@@ -20,8 +20,8 @@ Getopt::Long::Configure("no_ignore_case", "pass_through");
 GetOptions(
     "new|n=s"      => \$new,
     "d|dir=s"      => \$dir,
-    "p|port=s"      => \$port,
-    "a|addr=s"      => \$host,
+    "port=s"       => \$port,
+    "host=s"       => \$host,
     'I=s@'         => \@includes,
     "h|help",      => \my $help,
 );

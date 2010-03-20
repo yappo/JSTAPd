@@ -100,6 +100,7 @@ sub psgi_app {
     my $self = shift;
     return sub {
         my $res = $self->handler(@_);
+        return $res unless ref $res eq 'Plack::Response';
         return $res->finalize();
     };
 }
@@ -186,13 +187,21 @@ sub handler {
 
         # push request
         my $param = $req->parameters->as_hashref_mixed;
-        push @{ $self->get_path($session, $current_path)->{ajax_request_stack} }, +{
+        my $current = $self->get_path($session, $current_path);
+        push @{ $current->{ajax_request_stack} }, +{
             method => $req->method,
             path   => $req->uri->path,
             query  => $req->uri->query,
             param  => $param,
         };
-
+        if ($current->{pop_tap_request}) {
+            # send waiting request
+            my $stack = $current->{ajax_request_stack} || +[];
+            $stack = [ splice @{ $stack }, 0, $current->{pop_tap_request}->{requests} ];
+            $current->{pop_tap_request}->{cv}->send(
+                $self->json_response($stack)
+            );
+        }
     } else {
         # ajax request?
         my $path = $self->decode_urlmap($req->uri->path);
@@ -280,7 +289,24 @@ sub api_handler {
             if (scalar(@{ $stack }) >= $requests) {
                 $stack = [ splice @{ $stack }, 0, $requests ];
             } else {
-                $stack = +[];
+                # waiting
+                if ($current->{pop_tap_request}) {
+                    # XXX error handling
+                    return Plack::Response->new( 500, [ 'Content-Type' => 'text/plain' ], 'over fllow pop_tap_request request' );
+                }
+                $current->{pop_tap_request} = {
+                    cv       => AE::cv,
+                    requests => $requests,
+                };
+                return sub {
+                    my $start_response = shift;
+                    $current->{pop_tap_request}->{cv}->cb(
+                        sub {
+                            my $tmp = delete $current->{pop_tap_request};
+                            $start_response->( shift->recv->finalize );
+                        }
+                    );
+                }
             }
         } else {
             $current->{ajax_request_stack} = +[];

@@ -394,7 +394,9 @@ function all_tests_finish(){
 
     if (run_once) {
         get('exit', {}, function(r){ /* nothing response */ });
-        if (auto_open) window.close();
+        setTimeout(function(){
+            if (auto_open) window.close();
+        }, 100);
     }
 }
 

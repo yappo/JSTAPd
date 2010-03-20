@@ -9,6 +9,7 @@ use Path::Class;
 use Time::HiRes;
 use Plack::Request;
 use Plack::Response;
+use Plack::Runner;
 
 use JSTAPd::ContentsBag;
 use JSTAPd::Server::Contents;
@@ -83,21 +84,14 @@ sub run {
         }
     }
 
-    $self->{engine} = HTTP::Engine->new(
-        interface => {
-            module => 'ServerSimple',
-            args   => {
-                host => $self->{host},
-                port => $self->{port},
-                print_banner => sub {},
-            },
-            request_handler => sub {
-                $self->handler(@_);
-            },
-        },
+    my $runner = Plack::Runner->new(
+        options => [
+            host => $self->{host},
+            port => $self->{port},
+        ],
     );
-    warn "starting: $uri" unless $self->auto_open;
-    $self->{engine}->run;
+    print STDERR "starting: $uri\n" unless $self->auto_open;
+    $runner->run( $self->psgi_app );
 }
 
 sub psgi_app {

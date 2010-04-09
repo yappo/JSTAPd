@@ -85,7 +85,10 @@ sub run {
         }
     }
 
+    my $env = 'development';
+    $env = 'jstapd_auto_open' if $self->auto_open;
     my $runner = Plack::Runner->new(
+        env     => $env,
         server  => 'Twiggy',
         options => [
             host => $self->{host},

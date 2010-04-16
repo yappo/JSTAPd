@@ -5,6 +5,7 @@ if (typeof(JSTAPd) == 'undefined') JSTAPd = {
 	tap_count    : 0,
 	tap_tests    : 0,
 	xhr          : function(){},
+	get          : function(){},
 	is_dequeueing: function(){}
 };
 
@@ -55,6 +56,7 @@ var get = function(prefix, query, cb){
 	is_xhr_running++;
 	r.send(null);
 };
+JSTAPd.get = get;
 var tap = function(type, query, cb){
 	query.type = type;
 	get('tap', query, cb);

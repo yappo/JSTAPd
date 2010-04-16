@@ -97,149 +97,22 @@ sub build_index {
 sub _default_index {
     my %args = @_;
 
-    return sprintf <<'HTML', $args{jstapd_prefix}, $args{jstapd_prefix}, ($args{run_once} ? 'true' : 'false'), ($args{auto_open} ? 'true' : 'false'), _default_tap_lib();
+    return sprintf <<'HTML', $args{jstapd_prefix}, $args{jstapd_prefix}, $args{jstapd_prefix}, $args{jstapd_prefix}, ($args{run_once} ? 'true' : 'false'), ($args{auto_open} ? 'true' : 'false');
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta http-equiv="content-script-type" content="text/javascript">
         <title>JSTAPd main index</title>
+<script type="text/javascript" src="/%s/share/js/jstapd.js"></script>
+<script type="text/javascript" src="/%s/share/js/jstapd.index.js"></script>
 <script type="text/javascript">
-var jstapd_prefix = '/%s__api/';
-var contents_prefix = '/%s/contents/';
-var session = '';
-var path = '';
-var run_once = %s;
-var auto_open = %s;
-
-%s
-
-(function(){
-
-var status = {
-    tests: []
-};
-var current_path = '';
-function start_next(args){
-    var body = tap$tag('body');
-
-    var h = document.createElement("h2");
-    var a = document.createElement("a");
-    a.href = contents_prefix + args.path;
-    a.target = '_blank';
-    a.innerHTML = args.path;
-    a.name = args.path;
-    h.appendChild(a);
-    body.appendChild(h);
-
-    var iframe_div = document.createElement("div");
-    body.appendChild(iframe_div);
-
-    var iframe = document.createElement("iframe");
-    iframe_div.appendChild(iframe);
-    iframe.src = contents_prefix + path + '?session=' + session;
-    iframe.width = '100%%';
-
-    get('watch_finish', {}, function(r){
-        var json; eval('json = ' + r.responseText);
-        if (json.status != 0 && json.session == session && json.path == path) {
-            finish_and_next(json.tap, json.path, h);
-        } else {
-            alert("error?");
-        }
-    });
-}
-
-function finish_and_next(json, name, h){
-    var msg = ' .. ';
-    var is_ok = 0;
-    if (json.fail > 0) {
-        msg += json.ok + '/' + json.run;
-    } else if (json.error) {
-        msg += json.ok + '/' + json.run + ' ' + json.error;
-    } else {
-        msg += 'ok';
-        is_ok = 1;
-    }
-    if (json.tests > 0 && json.tests != json.run) {
-        msg += ' # Looks like you planned ' + json.tests + ' test but ran ' + json.run + '.';
-        is_ok = 0;
-    }
-
-    var span = document.createElement("span");
-    span.innerHTML = msg;
-    h.appendChild(span);
-
-    status.tests.push({ name: name, msg: msg, is_ok: is_ok });
-    get_next();
-}
-
-function all_tests_finish(){
-
-    var ul = document.createElement("ul");
-
-    var fails = 0;
-    for (i in status.tests) {
-        var ret = status.tests[i];
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = '#' + ret.name;
-        a.innerHTML = ret.name + ret.msg;
-        li.appendChild(a);
-        ul.appendChild(li);
-        if (!ret.is_ok) fails++;
-    }
-    var results = tap$('results');
-    results.appendChild(ul);
-
-    var div1 = document.createElement("div");
-    div1.innerHTML = 'Tests=' + status.tests.length + ', Fails=' + fails;
-    results.appendChild(div1);
-    
-    var div2 = document.createElement("div");
-    if (fails == 0) {
-        div2.innerHTML = 'Result: PASS';
-    } else {
-        div2.innerHTML = 'Result: FAIL';
-    }
-    results.appendChild(div2);
-
-    if (run_once) {
-        get('exit', {}, function(r){ /* nothing response */ });
-        setTimeout(function(){
-            if (auto_open) window.close();
-        }, 100);
-    }
-}
-
-function get_next(){
-    get('get_next', {}, function(r){
-        var json; eval('json = ' + r.responseText);
-        if (!json.session) return;
-        if (json.path == '-1') {
-            all_tests_finish();
-            return;
-        }
-        session = json.session;
-        path    = json.path;
-        start_next(json);
-    });
-}
-
-
-window.onload = function(){
-    var button = tap$('make-test');
-    if (run_once) {
-        button.style.display = 'none';
-        get_next();
-    } else {
-        button.onclick = function(){
-            get_next();
-        };
-    }
-};
-})();
-
+JSTAPd.jstapd_prefix = '/%s__api/';
+JSTAPd.contents_prefix = '/%s/contents/';
+JSTAPd.session = '';
+JSTAPd.path = '';
+JSTAPd.run_once = %s;
+JSTAPd.auto_open = %s;
 </script>
     </head>
     <body id="body">

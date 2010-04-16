@@ -49,223 +49,35 @@ sub header {
     my($self, %args) = @_;
     my $script = $self->suite->client_script;
 
-    my $html = sprintf <<'HTML', $args{jstapd_prefix}, $args{session}, $args{path}, _default_tap_lib(), $args{include} || 'nop()', $script;
+    return sprintf <<'HTML', $args{jstapd_prefix}, $args{jstapd_prefix}, $args{jstapd_prefix}, $args{session}, $args{path}, ($args{include} || 'nop()'), $script;
+<script type="text/javascript" src="/%s/share/js/jstapd.js"></script>
+<script type="text/javascript" src="/%s/share/js/jstapd.deferred.js"></script>
 <script type="text/javascript">
 (function(){
-var jstapd_prefix = '/%s__api/';
-var session       = '%s';
-var path          = '%s';
+JSTAPd.jstapd_prefix = '/%s__api/';
+JSTAPd.session       = '%s';
+JSTAPd.path          = '%s';
 
-%s
-
-// test functions
-var tap_count = 0;
-var tap_tests = 0;
-window.tests = function(num){
-    tap_tests = num;
-    enqueue(function(){
-        get('tests', { num: num });
-    });
-};
-window.ok   = function(val, msg){
-    var ret;
-    var comment = '';
-    try {
-        if (val) {
-            ret = 'ok';
-        } else {
-            ret = 'not ok';
-        }
-    } catch(e) {
-        comment = e;
-    }
-
-    enqueue(function(){
-        tap('ok', {
-            ret: ret,
-            num: (++tap_count),
-            msg: msg,
-            comment: comment
-        });
-    });
-};
-window.is   = function(got, expected, msg, is_not){
-    var ret;
-    var comment = '';
-    try {
-        if (got == expected) {
-            ret = is_not ? 'not ok' : 'ok';
-        } else {
-            ret = is_not ? 'ok' : 'not ok';
-        }
-    } catch(e) {
-        comment = e;
-    }
-
-    enqueue(function(){
-        tap((is_not ? 'isnt' : 'is'), {
-            ret: ret,
-            num: (++tap_count),
-            msg: msg,
-            got: got,
-            expected: expected,
-            comment: comment
-        });
-    });
-};
-window.isnt = function(got, expected, msg){
-    is(got, expected, msg, true);
-};
-window.like = function(got, expected, msg, is_not){
-    var ret;
-    var comment = '';
-    try {
-        if (got.search(expected) >= 0) {
-            ret = is_not ? 'not ok' : 'ok';
-        } else {
-            ret = is_not ? 'ok' : 'not ok';
-        }
-    } catch(e) {
-        comment = e;
-    }
-
-    enqueue(function(){
-        tap((is_not ? 'unlike' : 'like'), {
-            ret: ret,
-            num: (++tap_count),
-            msg: msg,
-            got: got,
-            expected: expected.toString(),
-            comment: comment
-        });
-    });
-};
-window.unlike = function(got, expected, msg){
-    like(got, expected, msg, true);
-};
-
-window.tap_done = function(error){
-    enqueue(function(){
-        get('tap_done', { error: error }, function(r){
-            var div = document.createElement("div");
-            div.innerHTML = r.responseText.replace(/\n/g, '<br>');
-            tap$tag('body').appendChild(div);
-            tap$('jstap_users_body_container').style.display = 'none';
-        })
-    });
-};
-
-window.tap_dump = function(){
-    enqueue(function(){
-        get('dump', {})
-    });
-};
-
-window.pop_tap_request = function(cb, opts){
-    enqueue(function(){
-        get('pop_tap_request', (opts || {}), function(r){
-            var json; eval('json = ' + r.responseText);
-            cb(json);
-        });
-    });
-};
-
-window.tap_addevent = function(target, event, callback, useCapture){
-    if (target.addEventListener) {
-        target.addEventListener(event, callback, useCapture);
-    } else if(target.attachEvent) {
-        target.attachEvent('on'+event, callback);
-    }
-}
-
-window.tap_xhr = function(){
-    return xhr();
-};
-
-// for jstapDeferred
-
-// load js libs
-jstapDeferred.register('include', function(src){
-    var d = new jstapDeferred;
-    var script = document.createElement('script');
-    var onload = function(){ d.call() };
-    if (typeof(script.onreadystatechange) == 'object') {
-        script.onreadystatechange = function(){
-            if (script.readyState != 'loaded' && script.readyState != 'complete') return;
-            onload();
-        };
-    } else {
-        tap_addevent(script, 'load', onload);
-    }
-    script.src = src;
-    tap$tag('body').appendChild(script);
-    return d;
-});
-
-// waiting testing done
-jstapDeferred.register('wait_finish', function(){
-    var d = new jstapDeferred;
-    if (tap_tests == 0) {
-        d.call();
-    } else {
-        // async done mode
-        var do_async = function(){
-            if (tap_count >= tap_tests) {
-                d.call();
-            } else {
-                setTimeout(do_async, 10);
-            }
-        };
-        setTimeout(do_async, 10);
-    }
-    return d;
-});
-
-// wait dequeueing
-jstapDeferred.wait_dequeue = function(cb){ // cb is for test
-    var d = new jstapDeferred;
-    var wait = function(){
-        if (is_dequeueing()) {
-            if (cb && typeof(cb) == 'function') cb(false);
-            setTimeout(wait, 100);
-        } else {
-            if (cb && typeof(cb) == 'function') cb(true);
-            d.call();
-        }
-    };
-    setTimeout(wait, 0);
-    return d;
-};
-jstapDeferred.register('wait_dequeue', jstapDeferred.wait_dequeue);
-
-})();
-</script>
-<script type="text/javascript">
-(function(){
 window.onload = function(){
-
-jstapDeferred.next(function(){
-    // lib load
-    return jstapDeferred.next(function(){}).
+    jstapDeferred.next(function(){
+        // lib load
+        return jstapDeferred.next(function(){}).
 %s
-    ;
-}).
-next(function(){
-   // run test
+        ;
+    }).
+    next(function(){
+        // run test
 %s
-}).
-wait_finish().
-next(function(){
-    // done
-    tap_done('');
-});
+    }).
+    wait_finish().
+    next(function(){
+        // done
+        tap_done('');
+    });
 }
-
 })();
-
 </script>
 HTML
-
 }
 
 sub build_html {

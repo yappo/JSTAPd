@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use AE;
 use Data::Dumper;
+use File::ShareDir;
+use File::Spec;
 use JSON::XS;
 use HTTP::Request;
 use LWP::UserAgent;
@@ -12,6 +14,7 @@ use Plack::Request;
 use Plack::Response;
 use Plack::Runner;
 
+use JSTAPd;
 use JSTAPd::ContentsBag;
 use JSTAPd::Server::Contents;
 use JSTAPd::TAP;
@@ -155,7 +158,18 @@ sub handler {
     my $apiurl        = $self->{conf}->{apiurl};
     my $res;
     if ($req->uri->path eq '/favicon.ico') {
-    } elsif (my($path) = $req->uri->path =~ m!^/$jstapd_prefix/(.+)?$!) {
+    } elsif (my($path) = $req->uri->path =~ m!^/$jstapd_prefix/share/(.+)$!) {
+        # share files
+        my $root =  eval { File::ShareDir::dist_dir('JSTAPd') } || do {
+            my @dirs = File::Spec->splitdir($INC{'JSTAPd.pm'});
+            pop @dirs;
+            pop @dirs;
+            File::Spec->catfile(@dirs, 'share');
+        };
+        my $path = File::Spec->catfile($root, split('/', $1));
+        open my $fh, '<', $path or die "$path: $!";
+        return Plack::Response->new(200, [], $fh);
+    } elsif (($path) = $req->uri->path =~ m!^/$jstapd_prefix/(.+)?$!) {
         # serve jstapd contents
         $path = 'index' unless $path;
         $path .= 'index' if $path =~ m!/$! || !$path;

@@ -15,7 +15,9 @@ requires 'Data::UUID';
 requires 'Test::TCP';
 requires 'FindBin';
 requires 'Getopt::Long';
+requires 'File::ShareDir';
 
+install_share 'share';
 install_script "scripts/jstapd";
 
 tests 't/*.t';

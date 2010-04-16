@@ -220,108 +220,10 @@ sub api_handler {
 
     # for main index
     my $current_path = $self->get_session($session)->{current_path};
-    if ($type eq 'get_next') {
-        my $next_current = -1;
-        if ($self->run_once) {
-            # for prove -vl jstap/foor/01_test.t
-            # or prove -vlr jstap
-            $next_current = $self->get_session($session)->{current_path} = $self->{run_file}.'' unless $current_path;
-            return $self->json_response(+{
-                session => $session,
-                path    => $next_current,
-            });
-        }
-
-        my $is_next = $current_path ? 0 : 1;
-        my $is_last = 0;
-        $self->{contents}->visitor(sub{
-            return if $is_last;
-            my $args = shift;
-            return if $args->{is_dir};
-            return unless $args->{name} =~ /\.t$/;
-            if ($is_next) {
-                $next_current = $args->{path};
-                $is_last++;
-                return;
-            }
-            if ($current_path eq $args->{path}) {
-                $is_next++;
-            }
-        });
-        $self->get_session($session)->{current_path} = $current_path = $next_current;
-        return $self->json_response(+{
-            session => $session,
-            path    => "$current_path",
-        });
-    } elsif ($type eq 'watch_finish') {
-        my @session_path = ($session, $current_path);
-        my $current = $self->get_path(@session_path);
-        if ($current_path && $current) {
-            # 終了までまってるなり
-            if ($current->{is_end}) {
-                # もうおわってた
-                my $tap = $self->get_tap(@session_path);
-                return $self->json_response({
-                    session => $session,
-                    path    => $current_path,
-                    tap     => $tap->as_hash,
-                });
-            } elsif ($current->{end_cv}) {
-            } else {
-                $current->{end_cv} = AE::cv;
-                return sub {
-                    my $start_response = shift;
-                    $current->{end_cv}->cb(
-                        sub {
-                            shift->recv;
-                            my $tap = $self->get_tap(@session_path);
-                            $start_response->( $self->json_response({
-                                session => $session,
-                                path    => $current_path,
-                                tap     => $tap->as_hash,
-                            })->finalize );
-                        }
-                    );
-                }
-            }
-        }
-    } elsif ($type eq 'pop_tap_request') {
-        my $current = $self->get_path($session, $current_path);
-        my $stack = $current->{ajax_request_stack} || +[];
-        if (my $requests = $req->param('requests')) {
-            if (scalar(@{ $stack }) >= $requests) {
-                $stack = [ splice @{ $stack }, 0, $requests ];
-            } else {
-                # waiting
-                if ($current->{pop_tap_request}) {
-                    # XXX error handling
-                    return Plack::Response->new( 500, [ 'Content-Type' => 'text/plain' ], 'over fllow pop_tap_request request' );
-                }
-                $current->{pop_tap_request} = {
-                    cv       => AE::cv,
-                    requests => $requests,
-                };
-                return sub {
-                    my $start_response = shift;
-                    $current->{pop_tap_request}->{cv}->cb(
-                        sub {
-                            my $tmp = delete $current->{pop_tap_request};
-                            $start_response->( shift->recv->finalize );
-                        }
-                    );
-                }
-            }
-        } else {
-            $current->{ajax_request_stack} = +[];
-        }
-        return $self->json_response($stack);
-
-    } elsif ($type eq 'exit') {
-        return unless $self->run_once && ref($self->{destroy}) eq 'CODE';
-        my $tap = $self->get_tap($session, $current_path);
-        $self->{destroy}->($self->{stdout}, $tap);
+    if (my $code = JSTAPd::Server::controller->can($type)) {
+        my $ret = $code->($self, $session, $req, $current_path);
+        return $ret if $ret;
     }
-
 
     # for tap test
     my $path = $req->param('path');
@@ -360,4 +262,120 @@ sub json_response {
     $res;
 }
 
+package JSTAPd::Server::controller;
+
+sub get_next {
+    my($c, $session, $req, $current_path) = @_;
+    my $next_path = -1;
+    if ($c->run_once) {
+        # for prove -vl jstap/foor/01_test.t
+        # or prove -vlr jstap
+        $next_path = $c->get_session($session)->{current_path} = $c->{run_file}.'' unless $current_path;
+        return $c->json_response(+{
+            session => $session,
+            path    => $next_path,
+        });
+    }
+
+    my $is_next = $current_path ? 0 : 1;
+    my $is_last = 0;
+    $c->{contents}->visitor(sub{
+        return if $is_last;
+        my $args = shift;
+        return if $args->{is_dir};
+        return unless $args->{name} =~ /\.t$/;
+        if ($is_next) {
+            $next_path = $args->{path};
+            $is_last++;
+            return;
+        }
+        if ($current_path eq $args->{path}) {
+            $is_next++;
+        }
+    });
+    $c->get_session($session)->{current_path} = $current_path = $next_path;
+    return $c->json_response(+{
+        session => $session,
+        path    => "$current_path",
+    });
+}
+
+sub watch_finish {
+    my($c, $session, $req, $current_path) = @_;
+
+    my @session_path = ($session, $current_path);
+    my $current = $c->get_path(@session_path);
+    if ($current_path && $current) {
+        # 終了までまってるなり
+        if ($current->{is_end}) {
+            # もうおわってた
+            my $tap = $c->get_tap(@session_path);
+            return $c->json_response({
+                session => $session,
+                path    => $current_path,
+                tap     => $tap->as_hash,
+            });
+        } elsif ($current->{end_cv}) {
+        } else {
+            $current->{end_cv} = AE::cv;
+            return sub {
+                my $start_response = shift;
+                $current->{end_cv}->cb(
+                    sub {
+                        shift->recv;
+                        my $tap = $c->get_tap(@session_path);
+                        $start_response->( $c->json_response({
+                            session => $session,
+                            path    => $current_path,
+                            tap     => $tap->as_hash,
+                        })->finalize );
+                    }
+                );
+            }
+        }
+    }
+}
+
+sub pop_tap_request {
+    my($c, $session, $req, $current_path) = @_;
+
+    my $current = $c->get_path($session, $current_path);
+    my $stack = $current->{ajax_request_stack} || +[];
+    if (my $requests = $req->param('requests')) {
+        if (scalar(@{ $stack }) >= $requests) {
+            $stack = [ splice @{ $stack }, 0, $requests ];
+        } else {
+            # waiting
+            if ($current->{pop_tap_request}) {
+                # XXX error handling
+                return Plack::Response->new( 500, [ 'Content-Type' => 'text/plain' ], 'over fllow pop_tap_request request' );
+            }
+            $current->{pop_tap_request} = {
+                cv       => AE::cv,
+                requests => $requests,
+            };
+            return sub {
+                my $start_response = shift;
+                $current->{pop_tap_request}->{cv}->cb(
+                    sub {
+                        my $tmp = delete $current->{pop_tap_request};
+                        $start_response->( shift->recv->finalize );
+                    }
+                );
+            }
+        }
+    } else {
+        $current->{ajax_request_stack} = +[];
+    }
+    return $c->json_response($stack);
+}
+
+sub exit {
+    my($c, $session, $req, $current_path) = @_;
+    return unless $c->run_once && ref($c->{destroy}) eq 'CODE';
+    my $tap = $c->get_tap($session, $current_path);
+    $c->{destroy}->($c->{stdout}, $tap);
+}
+
+package JSTAPd::Server;
 1;

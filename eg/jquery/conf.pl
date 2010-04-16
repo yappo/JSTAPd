@@ -1,4 +1,4 @@
-return {
+my $config = {
     jstapd_prefix => '____jstapd',
     apiurl        => qr{^/(?!____jstapd(?:__api)|jslib/)},
 };

@@ -10,6 +10,9 @@ use HTTP::Request;
 use LWP::UserAgent;
 use Path::Class;
 use Time::HiRes;
+
+use Plack::App::Directory;
+use Plack::Builder;
 use Plack::Request;
 use Plack::Response;
 use Plack::Runner;
@@ -99,7 +102,19 @@ sub run {
         ],
     );
     print STDERR "starting: $uri\n" unless $self->auto_open;
-    $runner->run( $self->psgi_app );
+
+    my $share_htroot = sprintf '/%s/share', $self->jstapd_prefix;
+    my $share_root   = eval { File::ShareDir::dist_dir('JSTAPd') } || do {
+        my @dirs = File::Spec->splitdir($INC{'JSTAPd.pm'});
+        pop @dirs; pop @dirs;
+        File::Spec->catfile(@dirs, 'share');
+    };
+
+    my $app = builder {
+        mount "$share_htroot" => Plack::App::Directory->new( root => $share_root )->to_app;
+        mount "/" => $self->psgi_app;
+    };
+    $runner->run( $app->to_app );
 }
 
 sub psgi_app {
@@ -158,18 +173,7 @@ sub handler {
     my $apiurl        = $self->{conf}->{apiurl};
     my $res;
     if ($req->uri->path eq '/favicon.ico') {
-    } elsif (my($path) = $req->uri->path =~ m!^/$jstapd_prefix/share/(.+)$!) {
-        # share files
-        my $root =  eval { File::ShareDir::dist_dir('JSTAPd') } || do {
-            my @dirs = File::Spec->splitdir($INC{'JSTAPd.pm'});
-            pop @dirs;
-            pop @dirs;
-            File::Spec->catfile(@dirs, 'share');
-        };
-        my $path = File::Spec->catfile($root, split('/', $1));
-        open my $fh, '<', $path or die "$path: $!";
-        return Plack::Response->new(200, [], $fh);
-    } elsif (($path) = $req->uri->path =~ m!^/$jstapd_prefix/(.+)?$!) {
+    } elsif (my($path) = $req->uri->path =~ m!^/$jstapd_prefix/(.+)?$!) {
         # serve jstapd contents
         $path = 'index' unless $path;
         $path .= 'index' if $path =~ m!/$! || !$path;

@@ -117,8 +117,8 @@ JSTAPd.auto_open = %s;
 </script>
     </head>
     <body id="body">
-        <div>Test Files: <span id="test_files"></span></div>
-        <div>Test Plans: <span id="test_plans"></span></div>
+        <div>Test Files: <span id="test_files_success">0</span>/<span id="test_files">0</span></div>
+        <div>Test Plans: <span id="test_plans_success">0</span>/<span id="test_plans">0</span></div>
         <div id="results" style="border: 1px solid red; margin: 10px"></div>
         <input type="button" id="make-test" value="make test"/>
     </body>

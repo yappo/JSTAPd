@@ -4,6 +4,7 @@ var status = {
 	tests: []
 };
 var current_path = '';
+var success_tests = 0;
 function start_next(args){
 	var body = tap$tag('body');
 
@@ -31,6 +32,7 @@ function start_next(args){
 		} else {
 			alert("error?");
 		}
+		tap$("test_files_success").innerHTML = ++success_tests;
 	});
 }
 

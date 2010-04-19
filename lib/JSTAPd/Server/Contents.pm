@@ -56,6 +56,7 @@ sub AUTOLOAD {
 
     # foo.t
     $server->setup_session_tap($session, $path);
+    $server->set_tests($session, $path);
 
     my $content = $server->contents->fetch_file($basename, \@chain);
 

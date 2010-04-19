@@ -1,8 +1,9 @@
 use JSTAPd::Suite;
 
+sub tests { 27 }
+
 sub client_script {
     return <<'DONE';
-tests(27);
 var c = 0;
 // next
 jstapDeferred.next(function(){

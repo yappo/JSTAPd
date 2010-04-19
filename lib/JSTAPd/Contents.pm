@@ -49,7 +49,7 @@ sub header {
     my($self, %args) = @_;
     my $script = $self->suite->client_script;
 
-    return sprintf <<'HTML', $args{jstapd_prefix}, $args{jstapd_prefix}, $args{jstapd_prefix}, $args{session}, $args{path}, ($args{include} || 'nop()'), $script;
+    return sprintf <<'HTML', $args{jstapd_prefix}, $args{jstapd_prefix}, $args{jstapd_prefix}, $args{session}, $args{path}, $self->suite->tests, ($args{include} || 'nop()'), $script;
 <script type="text/javascript" src="/%s/share/js/jstapd.js"></script>
 <script type="text/javascript" src="/%s/share/js/jstapd.deferred.js"></script>
 <script type="text/javascript">
@@ -57,6 +57,7 @@ sub header {
 JSTAPd.jstapd_prefix = '/%s__api/';
 JSTAPd.session       = '%s';
 JSTAPd.path          = '%s';
+JSTAPd.tap_tests     = %s;
 
 window.onload = function(){
     jstapDeferred.next(function(){

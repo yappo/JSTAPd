@@ -290,6 +290,22 @@ sub json_response {
     $res;
 }
 
+
+sub set_tests {
+    my($self, $session, $path) = @_;
+    my $tap = $self->get_tap($session, $path);
+    $self->{contents}->visitor(sub{
+        my $obj = shift;
+        my $child = $obj->{child};
+        return unless ref $child eq 'JSTAPd::Contents';
+        next unless $child->can('suite');
+        my $suite = $child->suite;
+        return unless $suite;
+        return unless $path eq $obj->{path};
+        $tap->tests($suite->tests) unless $tap->tests;
+    });
+}
+
 package JSTAPd::Server::controller;
 
 sub get_test_plans {
@@ -304,6 +320,7 @@ sub get_next {
         # for prove -vl jstap/foor/01_test.t
         # or prove -vlr jstap
         $next_path = $c->get_session($session)->{current_path} = $c->{run_file}.'' unless $current_path;
+        $c->set_tests($session, $next_path);
         return $c->json_response(+{
             session => $session,
             path    => $next_path,
@@ -326,6 +343,7 @@ sub get_next {
             $is_next++;
         }
     });
+    $c->set_tests($session, $next_path);
     $c->get_session($session)->{current_path} = $current_path = $next_path;
     return $c->json_response(+{
         session => $session,

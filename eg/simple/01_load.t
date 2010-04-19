@@ -1,8 +1,9 @@
 use JSTAPd::Suite;
 
+sub tests { 6 }
+
 sub client_script {
     return <<'DONE';
-tests(6);
 ok(1, 'ok 1');
 ok(!0, 'ok 0');
 is('test', 'test', 'is');

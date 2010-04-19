@@ -1,9 +1,9 @@
 use JSTAPd::Suite;
 
+sub tests { 15 }
+
 sub client_script {
     return <<'DONE';
-tests(15);
-
 // show hide
 $('.test').is_visible(5);
 $('.test').hide();

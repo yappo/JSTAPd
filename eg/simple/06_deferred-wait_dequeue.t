@@ -1,5 +1,7 @@
 use JSTAPd::Suite;
 
+sub tests { 7 }
+
 sub client_script {
     return <<'DONE';
 var w1 = 0, w2 = 0;

@@ -1,8 +1,9 @@
 use JSTAPd::Suite;
 
+sub tests { 19 }
+
 sub client_script {
     return <<'DONE';
-tests(19);
 setTimeout(function(){ ok(1, 'timeout'); }, 200);
 
 var i = 0;

@@ -22,7 +22,7 @@ function start_next(args){
 	var iframe = document.createElement("iframe");
 	iframe_div.appendChild(iframe);
 	iframe.src = JSTAPd.contents_prefix + JSTAPd.path + '?session=' + JSTAPd.session;
-	iframe.width = '100%%';
+	iframe.width = '100%';
 
 	JSTAPd.get('watch_finish', {}, function(r){
 		var json; eval('json = ' + r.responseText);

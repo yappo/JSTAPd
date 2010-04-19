@@ -113,9 +113,20 @@ JSTAPd.session = '';
 JSTAPd.path = '';
 JSTAPd.run_once = %s;
 JSTAPd.auto_open = %s;
+
+var plans;
+window.onload = function(){
+    get_test_plans(function(json){
+        plans = json;
+        tap$("test_files").innerHTML = json.files;
+        tap$("test_plans").innerHTML = json.tests;
+    });
+};
 </script>
     </head>
     <body id="body">
+        <div>Test Files: <span id="test_files"></span></div>
+        <div>Test Plans: <span id="test_plans"></span></div>
         <div id="results" style="border: 1px solid red; margin: 10px"></div>
         <input type="button" id="make-test" value="make test"/>
     </body>

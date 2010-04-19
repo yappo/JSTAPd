@@ -98,6 +98,11 @@ sub export {
         *{"$class\::$method"} = sub { +() };
     }
 
+    unless ($class->can('tests')) {
+        no strict 'refs';
+        *{"$class\::tests"} = sub () { 0 };
+    }
+
 }
 
 sub new {

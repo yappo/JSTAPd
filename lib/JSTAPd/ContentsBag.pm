@@ -93,6 +93,7 @@ sub _visitor {
             name   => $child->{name},
             path   => $current,
             is_dir => $is_dir,
+            child  => $child,
         });
         $self->_visitor($current, $child->{contents}, $cb) if $is_dir;
     }
@@ -101,6 +102,27 @@ sub _visitor {
 sub visitor {
     my($self, $cb) = @_;
     $self->_visitor('', $self->{contents}->{contents}, $cb);
+}
+
+sub test_plans {
+    my $self = shift;
+    my $files = 0;
+    my $tests = 0;
+    $self->visitor(sub {
+        my $obj   = shift;
+        my $child = $obj->{child};
+        return unless ref $child eq 'JSTAPd::Contents';
+        next unless $child->can('suite');
+        my $suite = $child->suite;
+        return unless $suite;
+
+        $files++;
+        $tests += $suite->tests;
+    });
+    +{
+        files => $files,
+        tests => $tests,
+    };
 }
 
 1;

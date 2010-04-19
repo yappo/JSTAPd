@@ -292,6 +292,11 @@ sub json_response {
 
 package JSTAPd::Server::controller;
 
+sub get_test_plans {
+    my($c, $session, $req, $current_path) = @_;
+    return $c->json_response($c->contents->test_plans);
+}
+
 sub get_next {
     my($c, $session, $req, $current_path) = @_;
     my $next_path = -1;

@@ -79,6 +79,14 @@ window.tests = function(num){
 		get('tests', { num: num });
 	});
 };
+window.get_test_plans = function(cb){
+	enqueue(function(){
+		get('get_test_plans', {}, function(r){
+			var json; eval('json = ' + r.responseText);
+			cb(json);
+		});
+	});
+};
 window.ok   = function(val, msg){
 	var ret;
 	var comment = '';

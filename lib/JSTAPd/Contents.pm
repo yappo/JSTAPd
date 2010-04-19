@@ -113,15 +113,6 @@ JSTAPd.session = '';
 JSTAPd.path = '';
 JSTAPd.run_once = %s;
 JSTAPd.auto_open = %s;
-
-var plans;
-window.onload = function(){
-    get_test_plans(function(json){
-        plans = json;
-        tap$("test_files").innerHTML = json.files;
-        tap$("test_plans").innerHTML = json.tests;
-    });
-};
 </script>
     </head>
     <body id="body">

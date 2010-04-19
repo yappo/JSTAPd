@@ -110,7 +110,7 @@ function get_next(){
 	});
 }
 
-
+var plans;
 window.onload = function(){
 	var button = tap$('make-test');
 	if (JSTAPd.run_once) {
@@ -121,5 +121,10 @@ window.onload = function(){
 			get_next();
 		};
 	}
+	get_test_plans(function(json){
+		plans = json;
+		tap$("test_files").innerHTML = json.files;
+		tap$("test_plans").innerHTML = json.tests;
+	});
 };
 })();

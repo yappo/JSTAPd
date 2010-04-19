@@ -43,25 +43,6 @@ sub index {
 package JSTAPd::Server::Contents::contents;
 use JSON::XS ();
 
-sub _gen_li {
-    my $path = shift;
-    sprintf '<li><a href="%s">%s</a></li>', $path, $path;
-}
-sub _index {
-    my($class, $server, $req, $session, $args, $chain) = @_;
-
-    my @li = _gen_li('../');
-    $server->contents->each( $chain => sub {
-        my($name, $is_dir) = @_;
-        return if $name eq 'index';
-        push @li, $is_dir ? _gen_li("$name/") : _gen_li($name);
-    });
-
-    my $index = $server->contents->fetch_file('index', $chain, 1);
-    my $body = sprintf "<ul>\n%s</ul>\n", join("\n", @li);
-    Plack::Response->new( 200, ['Content-Type' => 'text/html' ], $index->build_html( '', $body ) );
-}
-
 sub AUTOLOAD {
     my($class, $server, $req, $session, $args) = @_;
     my $path = our $AUTOLOAD;

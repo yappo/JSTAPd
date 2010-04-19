@@ -103,6 +103,7 @@ sub run {
     );
     print STDERR "starting: $uri\n" unless $self->auto_open;
 
+    my $contents_htroot = sprintf '/%s/contents', $self->jstapd_prefix;
     my $share_htroot = sprintf '/%s/share', $self->jstapd_prefix;
     my $share_root   = eval { File::ShareDir::dist_dir('JSTAPd') } || do {
         my @dirs = File::Spec->splitdir($INC{'JSTAPd.pm'});
@@ -110,9 +111,18 @@ sub run {
         File::Spec->catfile(@dirs, 'share');
     };
 
+    my $jstapd_app   = $self->psgi_app;
+    my $contents_dir = Plack::App::Directory->new( root => $self->{dir} )->to_app;
+    my $contents_app = sub {
+        my $path_info = $_[0]->{PATH_INFO};
+        return $contents_dir->(@_) unless $path_info =~ /\.t\z/;
+        $jstapd_app->(@_);
+    };
+
     my $app = builder {
-        mount "$share_htroot" => Plack::App::Directory->new( root => $share_root )->to_app;
-        mount "/" => $self->psgi_app;
+        mount "$share_htroot"    => Plack::App::Directory->new( root => $share_root )->to_app;
+        mount "$contents_htroot" => $contents_app,
+        mount "/"                => $jstapd_app;
     };
     $runner->run( $app->to_app );
 }

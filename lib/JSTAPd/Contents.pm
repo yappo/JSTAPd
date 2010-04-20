@@ -117,6 +117,7 @@ JSTAPd.auto_open = %s;
 </script>
     </head>
     <body id="body">
+        <div><a href="./share/">./share/</a> | <a href="./contents/">./contents/</a></div>
         <div>Test Files: <span id="test_files_success">0</span>/<span id="test_files">0</span></div>
         <div>Test Plans: <span id="test_plans_success">0</span>/<span id="test_plans">0</span></div>
         <div id="results" style="border: 1px solid red; margin: 10px"></div>

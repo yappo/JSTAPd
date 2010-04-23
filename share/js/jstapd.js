@@ -15,15 +15,27 @@ if (typeof(JSTAPd) == 'undefined') JSTAPd = {
 var queue = [];
 var is_xhr_running = 0;
 var in_dequeueing  = false;
+var queue_count = 1;
 var dequeue = function(){
 	if (_is_dequeueing()) return;
 	in_dequeueing = true;
-	var cb = queue.shift();
+window.console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: DEQUEUE: " + queue);
+window.console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: DEQUEUE: " + queue.length);
+	var obj = queue.shift() || { id: 'null', cb: null };
+	var cb = obj.cb;
 	if (cb && typeof cb == 'function') cb();
+window.console.log("====== start: dequeue: " + JSTAPd.tap_count + ", count=" + obj.id + ", CB= " + cb);
 	in_dequeueing = false;
 };
 var enqueue = function(cb){
-	queue.push(cb);
+window.console.log("====== start: enqueue: " + JSTAPd.tap_count + ", count=" + queue_count + ", CB= " + cb);
+	queue.push({
+				   cb: cb,
+				   id: queue_count++
+			   });
+window.console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: ENQUEUE: " + queue);
+window.queue_count = queue_count;
+window.queue = queue;
 	dequeue();
 };
 var _is_dequeueing = function(){ return is_xhr_running || in_dequeueing };
@@ -45,8 +57,10 @@ var get = function(prefix, query, cb){
 		query_stack.push(encodeURIComponent(k) + '=' + encodeURIComponent(query[k]));
 	}
 
+window.console.log("====== XHR get : " + JSTAPd.tap_count + ", " + uri);
 	r.open('GET', query_stack.join('&'));
 	r.onreadystatechange = function() {
+window.console.log("====== XHR get done : " + JSTAPd.tap_count + ", " + uri + ", " + r.readyState);
 		if (r.readyState == 4 && r.status == 200) {
 			if (cb && typeof cb == 'function') cb(r);
 			is_xhr_running--;

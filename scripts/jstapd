@@ -79,24 +79,38 @@ END
     $fh = $f->openw;
     print $fh <<'END';
 use JSTAPd::Suite;
+sub tests { 6 }
 
-sub client_script {
-    return <<'DONE';
-tests(6);
+sub include {
+#    (
+#        'your-under-controll-scriptfile.js',
+#    );
+}
+
+sub include_ex {
+#    (
+#        'your-not-under-controll-scriptfile.js',
+#    );
+}
+END
+
+    $f = $d->file('01_base.js');
+    print "create $f\n";
+    $fh = $f->openw;
+    print $fh <<'END';
 ok(1, 'ok 1');
 ok(!0, 'ok 0');
 is('test', 'test', 'is');
 isnt('test', 'dev', 'isnt');
 like('test', new RegExp('es'), 'like');
 is(tap$('test').innerHTML, 'DATA', 'getElementById');
-DONE
-}
+END
 
-sub html_body {
-    return <<'DONE';
+    $f = $d->file('01_base.html');
+    print "create $f\n";
+    $fh = $f->openw;
+    print $fh <<'END';
 <div id='test'>DATA</div>
-DONE
-}
 END
 
     exit;

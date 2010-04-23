@@ -113,11 +113,11 @@ jstapd -
 
 =head1 SYNOPSIS
 
-# start server
-jstapd -d testdir
-  --host 0.0.0.0  - listen address
-  --port 1978     - listen port
+  # start server
+  jstapd -d testdir
+    --host 0.0.0.0  - listen address
+    --port 1978     - listen port
 
-# create new test
-jstapd -n foo/bar/dirname
+  # create new test
+  jstapd -n foo/bar/dirname
 

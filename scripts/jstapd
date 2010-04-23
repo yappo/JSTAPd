@@ -5,6 +5,7 @@ use lib 'lib';
 use Getopt::Long;
 use JSTAPd::Server;
 use Path::Class;
+use Pod::Usage;
 
 # From 'prove': Allow cuddling the paths with the -ignore_case
 @ARGV = map { /^(-I)(.+)/ ? ($1,$2) : $_ } @ARGV;

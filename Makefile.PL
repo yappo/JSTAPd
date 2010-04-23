@@ -10,6 +10,7 @@ requires 'JSON::XS';
 requires 'HTTP::Request';
 requires 'LWP::UserAgent';
 requires 'Path::Class';
+requires 'Pod::Usage';
 requires 'Time::HiRes';
 requires 'Data::UUID';
 requires 'Test::TCP';

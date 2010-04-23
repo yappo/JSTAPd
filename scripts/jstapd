@@ -102,6 +102,7 @@ END
     exit;
 }
 
+pod2usage(0) unless -d $dir;
 JSTAPd::Server->new( dir => $dir, port => $port, host => $host )->run;
 
 __END__

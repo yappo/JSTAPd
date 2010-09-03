@@ -4,6 +4,7 @@ eg/jquery/conf.pl
 eg/jquery/index
 eg/jslib/include1.js
 eg/jslib/include2.js
+eg/jslib/jquery-1.3.2.min.js
 eg/simple/01_load.t
 eg/simple/01_load_split.html
 eg/simple/01_load_split.js
@@ -16,6 +17,7 @@ eg/simple/06_deferred-wait_dequeue.t
 eg/simple/100_dir/01_one.t
 eg/simple/conf.pl
 eg/simple/index
+inc/ExtUtils/MakeMaker.pm
 inc/Module/Install.pm
 inc/Module/Install/AuthorTests.pm
 inc/Module/Install/Base.pm
@@ -27,6 +29,7 @@ inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
 inc/Module/Install/Repository.pm
 inc/Module/Install/Scripts.pm
+inc/Module/Install/Share.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 inc/Test/More.pm
@@ -47,6 +50,10 @@ MANIFEST			This list of files
 META.yml
 README
 scripts/jstapd
+share/js/jquery-jstapd.js
+share/js/jstapd.deferred.js
+share/js/jstapd.index.js
+share/js/jstapd.js
 t/00_compile.t
 xt/01_podspell.t
 xt/02_perlcritic.t

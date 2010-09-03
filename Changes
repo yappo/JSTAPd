@@ -1,4 +1,8 @@
 Revision history for Perl extension JSTAPd
 
+0.02    2010-09-04T02:58:43+09:00
+        - switch from HTTP::Engine to Twiggy
+        - split javascript code by .pm files
+
 0.01    2009-12-30T13:30:41+09:00
         - original version

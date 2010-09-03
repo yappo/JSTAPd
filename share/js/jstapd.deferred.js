@@ -16,32 +16,17 @@ jstapDeferred.prototype = {
 	next: function(cb, m){
 		this.dnext = new jstapDeferred();
 		this.dnext.cb = cb;
-window.console.log("SET id: " + this.id);
-window.console.log("SET: " + cb);
 		return this.dnext;
 	},
 	call: function(nextval){
 		if (this.error) return;
-//if (window.yappo) {
-window.console.log("おうっふ");
-//}
 		var retval;
-window.console.log("-RET id: " + this.id);
-window.console.log("-RET0: " + this.error);
-window.console.log("-RET1: " + retval);
-window.console.log("-RET2: " + this.dnext);
-if (this.dnext) window.console.log("-RET: " + this.dnext.cb);
 		try {
 			if (this.nextval !== null) nextval = this.nextval;
 			retval = this.cb.call(this, nextval);
 		} catch (e) {
 			this.error = e;
 		}
-window.console.log("+RET id: " + this.id);
-window.console.log("+RET0: " + this.error);
-window.console.log("+RET1: " + retval);
-window.console.log("+RET2: " + this.dnext);
-if (this.dnext) window.console.log("+RET: " + this.dnext.cb);
 		if (retval instanceof jstapDeferred) {
 			retval.dnext = this.dnext;
 			if (retval.dnext !== null) retval.dnext.nextval = nextval;
@@ -180,13 +165,11 @@ jstapDeferred.register('include', function(src){
 // waiting testing done
 jstapDeferred.register('wait_finish', function(){
 	var d = new jstapDeferred;
-window.console.log("start: あばばばば" + JSTAPd.tap_count + ', ' + JSTAPd.tap_tests);
 	if (JSTAPd.tap_tests == 0) {
 		d.call();
 	} else {
 		// async done mode
 		var do_async = function(){
-window.console.log("あばばばば" + JSTAPd.tap_count + ', ' + JSTAPd.tap_tests);
 			if (JSTAPd.tap_count >= JSTAPd.tap_tests) {
 				d.call();
 			} else {
